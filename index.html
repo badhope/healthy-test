@@ -1,1151 +1,2222 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>俄罗斯方块</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        primary: '#8b5cf6',
-        secondary: '#ec4899',
-        accent: '#06b6d4',
-        dark: '#0f0a1e',
-        card: 'rgba(255, 255, 255, 0.08)'
-      }
-    }
-  }
-}
-</script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-body { 
-  font-family: 'Noto Sans SC', sans-serif;
-  overflow: hidden;
-  touch-action: none;
-  background: #0a0612;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VitalityLab Pro | 生命健康科学实验室</title>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-light: #34d399;
+            --secondary: #0ea5e9;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+            --bg: #f0fdf4;
+            --card: rgba(255, 255, 255, 0.9);
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
 
-.glass {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-.glass-strong {
-  background: rgba(30, 20, 50, 0.8);
-  backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-20px) scale(1.05); }
-}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 25%, #fef3c7 50%, #fce7f3 75%, #f3e8ff 100%);
+            background-attachment: fixed;
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
 
-@keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
-}
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-@keyframes lineFlash {
-  0% { filter: brightness(1); }
-  30% { filter: brightness(3); background: #fff !important; }
-  100% { filter: brightness(1); opacity: 0; transform: scaleY(0); }
-}
+        /* 动态背景粒子 */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float-particle 20s infinite;
+        }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-8px); }
-  40% { transform: translateX(8px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
-}
+        @keyframes float-particle {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
 
-@keyframes scorePopup {
-  0% { transform: scale(0.5) translateY(0); opacity: 1; }
-  100% { transform: scale(1.2) translateY(-50px); opacity: 0; }
-}
+        /* 浮动表情 */
+        .floating-emoji {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 1;
+            animation: float-emoji 8s ease-in-out infinite;
+            opacity: 0.3;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
 
-@keyframes rainbow {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
-}
+        @keyframes float-emoji {
+            0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            25% { transform: translate(20px, -30px) scale(1.1) rotate(5deg); }
+            50% { transform: translate(-10px, -50px) scale(0.9) rotate(-5deg); }
+            75% { transform: translate(15px, -20px) scale(1.05) rotate(3deg); }
+        }
 
-.floating { animation: float 6s ease-in-out infinite; }
-.pulse { animation: pulse 3s ease-in-out infinite; }
-.slide-in { animation: slideIn 0.5s ease-out forwards; }
-.shake { animation: shake 0.4s ease-out; }
+        /* 容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            position: relative;
+            z-index: 10;
+        }
 
-.cell {
-  border-radius: 3px;
-  transition: all 0.05s;
-}
+        /* 头部 */
+        header {
+            text-align: center;
+            padding: 3rem 1rem 2rem;
+            position: relative;
+        }
 
-.cell-I { background: linear-gradient(135deg, #22d3ee, #0891b2); box-shadow: 0 0 12px rgba(34, 211, 238, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
-.cell-O { background: linear-gradient(135deg, #facc15, #ca8a04); box-shadow: 0 0 12px rgba(250, 204, 21, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
-.cell-T { background: linear-gradient(135deg, #a855f7, #7c3aed); box-shadow: 0 0 12px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
-.cell-S { background: linear-gradient(135deg, #4ade80, #16a34a); box-shadow: 0 0 12px rgba(74, 222, 128, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
-.cell-Z { background: linear-gradient(135deg, #f472b6, #db2777); box-shadow: 0 0 12px rgba(244, 114, 182, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
-.cell-J { background: linear-gradient(135deg, #60a5fa, #2563eb); box-shadow: 0 0 12px rgba(96, 165, 250, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
-.cell-L { background: linear-gradient(135deg, #fb923c, #ea580c); box-shadow: 0 0 12px rgba(251, 146, 60, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
-.cell-obstacle { 
-  background: linear-gradient(135deg, #374151, #1f2937); 
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-  border: 1px solid rgba(255,255,255,0.1);
-}
+        .logo-container {
+            position: relative;
+            display: inline-block;
+        }
 
-.ghost-cell {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 2px dashed rgba(255, 255, 255, 0.25) !important;
-  box-shadow: none !important;
-}
+        .logo {
+            font-size: clamp(3rem, 10vw, 5rem);
+            font-weight: 900;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.03em;
+            position: relative;
+            text-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
 
-.line-clear {
-  animation: lineFlash 0.35s ease-out forwards;
-}
+        .logo-shine {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shine 3s infinite;
+        }
 
-.score-popup {
-  position: absolute;
-  font-weight: 900;
-  font-size: 24px;
-  color: #fbbf24;
-  text-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
-  animation: scorePopup 0.8s ease-out forwards;
-  pointer-events: none;
-  z-index: 100;
-}
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
 
-.btn {
-  transition: all 0.2s;
-  cursor: pointer;
-}
+        .subtitle {
+            color: var(--text-light);
+            margin-top: 1rem;
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 500;
+        }
 
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
-}
+        .badge-container {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+        }
 
-.btn:active {
-  transform: scale(0.95);
-}
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            animation: pulse-badge 2s infinite;
+            backdrop-filter: blur(10px);
+        }
 
-.ctrl-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  transition: all 0.1s;
-  cursor: pointer;
-}
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
 
-.ctrl-btn:active {
-  transform: scale(0.85);
-  background: rgba(255,255,255,0.2);
-}
+        .badge-green { background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-blue { background: rgba(14, 165, 233, 0.15); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.3); }
+        .badge-purple { background: rgba(139, 92, 246, 0.15); color: #7c3aed; border: 1px solid rgba(139, 92, 246, 0.3); }
+        .badge-pink { background: rgba(236, 72, 153, 0.15); color: #db2777; border: 1px solid rgba(236, 72, 153, 0.3); }
 
-.screen {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.4s ease;
-}
+        /* 导航栏 */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 1rem;
+            margin: 1rem auto;
+            max-width: 800px;
+            padding: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
 
-.screen.hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.95);
-}
+        .nav-tabs {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.25rem;
+            scrollbar-width: none;
+        }
 
-.mode-card {
-  transition: all 0.3s;
-  cursor: pointer;
-}
+        .nav-tabs::-webkit-scrollbar { display: none; }
 
-.mode-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-}
+        .nav-tab {
+            flex: 1;
+            min-width: 80px;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+        }
 
-.rank-item {
-  transition: all 0.2s;
-}
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
 
-.rank-item:hover {
-  background: rgba(255,255,255,0.1);
-}
+        .nav-tab:active::before {
+            width: 100px;
+            height: 100px;
+        }
 
-/* 滚动条 */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
-</style>
+        .nav-tab.active {
+            background: var(--gradient-1);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-tab .emoji {
+            display: block;
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* 卡片 */
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 2rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.5) inset;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slide-up 0.6s ease-out;
+        }
+
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: var(--gradient-1);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .card-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        /* 输入区域 */
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+            background: rgba(255,255,255,0.5);
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        .input-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-group .icon {
+            font-size: 1.25rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+        }
+
+        .unit {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.875rem;
+            background: #f3f4f6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+        }
+
+        /* 按钮 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: white;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-glass {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: var(--text);
+        }
+
+        /* 仪表盘 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-1);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--primary);
+        }
+
+        .metric-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            font-weight: 600;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-status {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .status-good { background: #d1fae5; color: #065f46; }
+        .status-warning { background: #fef3c7; color: #92400e; }
+        .status-danger { background: #fee2e2; color: #991b1b; }
+
+        /* 图表容器 */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .chart-box {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* 人体可视化 */
+        .body-visual {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .body-svg {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.1));
+        }
+
+        .body-part {
+            cursor: pointer;
+            transition: all 0.3s;
+            fill: #e5e7eb;
+        }
+
+        .body-part:hover {
+            fill: var(--primary);
+            filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5));
+        }
+
+        .body-part.active {
+            fill: var(--secondary);
+            animation: pulse-part 2s infinite;
+        }
+
+        @keyframes pulse-part {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .organ-info {
+            position: absolute;
+            background: white;
+            padding: 1rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            font-size: 0.875rem;
+            max-width: 200px;
+            display: none;
+            z-index: 10;
+            border: 2px solid var(--primary);
+        }
+
+        /* 化学元素表 */
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            font-size: 0.75rem;
+        }
+
+        .element {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 700;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .element::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.3));
+        }
+
+        .element:hover {
+            transform: scale(1.2) rotate(5deg);
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .element-symbol { font-size: 1.25rem; }
+        .element-name { font-size: 0.6rem; opacity: 0.8; }
+        .element-mass { font-size: 0.6rem; opacity: 0.6; }
+
+        .element-essential { background: var(--gradient-4); color: white; }
+        .element-trace { background: var(--gradient-3); color: white; }
+        .element-electrolyte { background: var(--accent); color: white; }
+
+        /* 消化时间轴 */
+        .digestion-timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary), var(--purple));
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            width: 45%;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: 4px solid var(--primary);
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .timeline-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 名言轮播 */
+        .quote-carousel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 2rem;
+            background: var(--gradient-2);
+            padding: 3rem 2rem;
+            color: white;
+            margin: 2rem 0;
+            box-shadow: 0 20px 40px rgba(245, 87, 108, 0.3);
+        }
+
+        .quote-slide {
+            text-align: center;
+            animation: fade-quote 8s infinite;
+        }
+
+        @keyframes fade-quote {
+            0%, 20% { opacity: 1; transform: translateY(0); }
+            25%, 95% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .quote-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            font-style: italic;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+        }
+
+        .quote-author {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* 推荐卡片 */
+        .recommendation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .rec-card {
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .rec-card:hover {
+            transform: translateY(-10px) rotate(2deg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .rec-image {
+            height: 150px;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .rec-content {
+            padding: 1.5rem;
+        }
+
+        .rec-title {
+            font-weight: 700;
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .rec-desc {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        .rec-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .rec-tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            background: #f3f4f6;
+            border-radius: 9999px;
+            color: var(--text-light);
+        }
+
+        /* 隐私模式 */
+        .privacy-toggle {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            z-index: 100;
+            background: white;
+            border-radius: 1rem;
+            padding: 0.75rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .privacy-toggle:hover {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .privacy-toggle.active {
+            background: #1f2937;
+            color: white;
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 26px;
+            background: #e5e7eb;
+            border-radius: 13px;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .privacy-toggle.active .toggle-switch {
+            background: var(--primary);
+        }
+
+        .toggle-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .privacy-toggle.active .toggle-knob {
+            transform: translateX(24px);
+        }
+
+        /* 彩蛋 */
+        .easter-egg {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4);
+            transition: all 0.3s;
+            z-index: 100;
+            animation: float-egg 3s ease-in-out infinite;
+        }
+
+        @keyframes float-egg {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .easter-egg:hover {
+            transform: scale(1.2) rotate(15deg);
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 2rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modal-in 0.3s;
+        }
+
+        @keyframes modal-in {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .container { padding: 0.75rem; }
+            .card { padding: 1.25rem; border-radius: 1.5rem; }
+            .input-section { grid-template-columns: 1fr; }
+            .dashboard { grid-template-columns: repeat(2, 1fr); }
+            .periodic-table { grid-template-columns: repeat(4, 1fr); }
+            .timeline-content { width: 80%; }
+            .timeline-item:nth-child(odd) { flex-direction: row; }
+            .nav-tab { min-width: 70px; padding: 0.5rem; font-size: 0.75rem; }
+            .nav-tab .emoji { font-size: 1rem; }
+            .quote-text { font-size: 1.125rem; }
+            .privacy-toggle { bottom: 1rem; left: 1rem; }
+            .easter-egg { bottom: 1rem; right: 1rem; width: 50px; height: 50px; font-size: 1.5rem; }
+        }
+
+        /* 隐藏/显示 */
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.5s; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 加载动画 */
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #e5e7eb;
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            animation: rotate 1s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 工具提示 */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            margin-bottom: 0.5rem;
+        }
+
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-5px);
+        }
+    </style>
 </head>
-<body class="min-h-screen relative text-white">
-
-<!-- 背景装饰 -->
-<div class="fixed inset-0 overflow-hidden pointer-events-none">
-  <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl floating"></div>
-  <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-pink-600/20 rounded-full blur-3xl floating" style="animation-delay:-2s"></div>
-  <div class="absolute top-1/2 left-1/2 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pulse"></div>
-</div>
-
-<!-- ========== 开始界面 ========== -->
-<div id="startScreen" class="screen z-30 p-4">
-  <div class="text-center max-w-lg mx-auto">
-    <div class="mb-8 slide-in">
-      <h1 class="text-5xl md:text-6xl font-black mb-3 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-        俄罗斯方块
-      </h1>
-      <p class="text-white/40 text-lg">经典益智游戏 · 挑战你的极限</p>
-    </div>
+<body>
+    <!-- 粒子背景 -->
+    <div class="particles-container" id="particles"></div>
     
-    <div class="glass-strong rounded-3xl p-6 mb-6 slide-in" style="animation-delay:0.1s">
-      <div class="grid grid-cols-3 gap-4 mb-6 text-center">
-        <div class="p-3">
-          <div class="text-3xl mb-1">🎮</div>
-          <div class="text-white/50 text-sm">多种模式</div>
+    <!-- 浮动表情 -->
+    <div id="floatingEmojis"></div>
+
+    <!-- 隐私模式开关 -->
+    <div class="privacy-toggle" id="privacyToggle" onclick="togglePrivacy()">
+        <span style="font-size: 1.25rem;">🔒</span>
+        <div style="display: flex; flex-direction: column;">
+            <span style="font-size: 0.75rem; font-weight: 700;">隐私模式</span>
+            <span style="font-size: 0.625rem; opacity: 0.7;">本地计算</span>
         </div>
-        <div class="p-3">
-          <div class="text-3xl mb-1">🏆</div>
-          <div class="text-white/50 text-sm">排行榜</div>
+        <div class="toggle-switch">
+            <div class="toggle-knob"></div>
         </div>
-        <div class="p-3">
-          <div class="text-3xl mb-1">⚡</div>
-          <div class="text-white/50 text-sm">流畅操作</div>
-        </div>
-      </div>
-      
-      <button id="startBtn" class="btn w-full bg-gradient-to-r from-purple-500 to-pink-500 py-4 rounded-2xl font-bold text-lg shadow-lg shadow-purple-500/30">
-        <i class="fas fa-play mr-2"></i>开始游戏
-      </button>
     </div>
-    
-    <div class="text-white/20 text-xs slide-in" style="animation-delay:0.2s">
-      适合全年龄段 · 简单易上手
+
+    <!-- 彩蛋按钮 -->
+    <div class="easter-egg" id="easterEgg" onclick="triggerEasterEgg()">🧬</div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 头部 -->
+        <header>
+            <div class="logo-container">
+                <h1 class="logo">VitalityLab<span style="font-size: 0.3em; vertical-align: super;">Pro</span></h1>
+                <div class="logo-shine"></div>
+            </div>
+            <p class="subtitle">探索生命科学的无限可能 · 从分子到系统的健康全景</p>
+            <div class="badge-container">
+                <span class="badge badge-green">🌱 循证医学</span>
+                <span class="badge badge-blue">🔬 分子生物学</span>
+                <span class="badge badge-purple">⚗️ 生物化学</span>
+                <span class="badge badge-pink">🧬 基因组学</span>
+            </div>
+        </header>
+
+        <!-- 导航 -->
+        <nav class="nav-bar">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchTab('overview')">
+                    <span class="emoji">📊</span>
+                    <span>总览</span>
+                </button>
+                <button class="nav-tab" onclick="switchTab('body')">
+                    <span class="emoji">🫀</span>
+                    <span>人体</span>
+                </button>
+                <button class="nav-tab" onclick="switchTab('chemistry')">
+                    <span class="emoji">⚗️</span>
+                    <span>化学</span>
+                </button>
+                <button class="nav-tab" onclick="switchTab('digestion')">
+                    <span class="emoji">🍽️</span>
+                    <span>消化</span>
+                </button>
+                <button class="nav-tab" onclick="switchTab('recommend')">
+                    <span class="emoji">💡</span>
+                    <span>推荐</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- 总览标签 -->
+        <div id="tab-overview" class="tab-content active">
+            <!-- 数据输入 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <div>
+                        <h2 class="card-title">身体数据实验室</h2>
+                        <p class="card-subtitle">输入您的生理参数，开启深度健康分析</p>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <div class="input-group">
+                        <label><span class="icon">📏</span>身高 Height</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="height" placeholder="175.0" step="0.1" oninput="calculateAll()">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label><span class="icon">⚖️</span>体重 Weight</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="weight" placeholder="70.0" step="0.1" oninput="calculateAll()">
+                            <span class="unit">kg</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label><span class="icon">🎂</span>年龄 Age</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="age" placeholder="25" oninput="calculateAll()">
+                            <span class="unit">岁</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label><span class="icon">⚧</span>性别 Sex</label>
+                        <select id="gender" onchange="calculateAll()" style="cursor: pointer;">
+                            <option value="male">👨 男性 Male</option>
+                            <option value="female">👩 女性 Female</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label><span class="icon">📏</span>腰围 Waist</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="waist" placeholder="80" step="0.1" oninput="calculateAll()">
+                            <span class="unit">cm</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label><span class="icon">🎯</span>目标 Goal</label>
+                        <select id="goal" onchange="calculateAll()" style="cursor: pointer;">
+                            <option value="maintain">⚖️ 保持 Maintain</option>
+                            <option value="lose">📉 减脂 Fat Loss</option>
+                            <option value="gain">📈 增肌 Muscle Gain</option>
+                            <option value="performance">🏃 运动表现 Performance</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn btn-primary" onclick="calculateAll(true)" style="min-width: 200px;">
+                        <span>🚀</span> 启动全面分析
+                    </button>
+                </div>
+            </div>
+
+            <!-- 仪表盘 -->
+            <div class="dashboard" id="dashboard">
+                <div class="metric-card" data-tooltip="身体质量指数 - WHO标准">
+                    <span class="metric-icon">📊</span>
+                    <div class="metric-value" id="bmiValue">--</div>
+                    <div class="metric-label">BMI 指数</div>
+                    <span class="metric-status status-good" id="bmiStatus">等待数据</span>
+                </div>
+                <div class="metric-card" data-tooltip="基础代谢率 - Mifflin-St Jeor方程">
+                    <span class="metric-icon">🔥</span>
+                    <div class="metric-value" id="bmrValue">--</div>
+                    <div class="metric-label">基础代谢 kcal</div>
+                    <span class="metric-status status-good">每日消耗</span>
+                </div>
+                <div class="metric-card" data-tooltip="体脂百分比 - 基于BMI估算">
+                    <span class="metric-icon">🥩</span>
+                    <div class="metric-value" id="bfpValue">--%</div>
+                    <div class="metric-label">体脂率</div>
+                    <span class="metric-status status-good" id="bfpStatus">健康范围</span>
+                </div>
+                <div class="metric-card" data-tooltip="理想体重范围">
+                    <span class="metric-icon">🎯</span>
+                    <div class="metric-value" id="idealWeight">--</div>
+                    <div class="metric-label">理想体重 kg</div>
+                    <span class="metric-status status-good">BMI 18.5-24</span>
+                </div>
+                <div class="metric-card" data-tooltip="每日总能量消耗 - TDEE">
+                    <span class="metric-icon">⚡</span>
+                    <div class="metric-value" id="tdeeValue">--</div>
+                    <div class="metric-label">每日消耗 kcal</div>
+                    <span class="metric-status status-good" id="tdeeStatus">维持体重</span>
+                </div>
+                <div class="metric-card" data-tooltip="代谢当量 - 相对于静息代谢">
+                    <span class="metric-icon">🧪</span>
+                    <div class="metric-value" id="metValue">--</div>
+                    <div class="metric-label">METs</div>
+                    <span class="metric-status status-good">代谢水平</span>
+                </div>
+            </div>
+
+            <!-- 图表区 -->
+            <div class="chart-grid">
+                <div class="chart-box">
+                    <div class="chart-title">📈 身体成分分析</div>
+                    <div class="chart-container">
+                        <canvas id="bodyChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-title">🎯 健康风险评估</div>
+                    <div class="chart-container">
+                        <canvas id="riskChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-title">⚖️ 体重变化预测</div>
+                    <div class="chart-container">
+                        <canvas id="weightChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-title">🍎 营养素需求分析</div>
+                    <div class="chart-container">
+                        <canvas id="nutritionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 人体标签 -->
+        <div id="tab-body" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: var(--gradient-2);">🫀</div>
+                    <div>
+                        <h2 class="card-title">交互式人体解剖</h2>
+                        <p class="card-subtitle">点击身体部位探索生理机制</p>
+                    </div>
+                </div>
+
+                <div class="body-visual">
+                    <svg class="body-svg" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 头部 -->
+                        <ellipse class="body-part" data-organ="brain" cx="100" cy="30" rx="25" ry="30" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                        <!-- 颈部 -->
+                        <rect class="body-part" data-organ="neck" x="90" y="60" width="20" height="20" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                        <!-- 胸部 -->
+                        <path class="body-part" data-organ="heart" d="M 60 90 Q 100 80 140 90 L 140 150 Q 100 160 60 150 Z" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                        <!-- 肺部 -->
+                        <ellipse class="body-part" data-organ="lung" cx="75" cy="120" rx="20" ry="30" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+                        <ellipse class="body-part" data-organ="lung" cx="125" cy="120" rx="20" ry="30" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+                        <!-- 心脏 -->
+                        <path class="body-part" data-organ="heart" d="M 100 130 C 90 120, 80 120, 80 130 C 80 140, 100 155, 100 155 C 100 155, 120 140, 120 130 C 120 120, 110 120, 100 130" fill="#fecaca" stroke="#ef4444" stroke-width="2" opacity="0.8"/>
+                        <!-- 腹部 -->
+                        <ellipse class="body-part" data-organ="digestive" cx="100" cy="200" rx="45" ry="60" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                        <!-- 肝脏 -->
+                        <path class="body-part" data-organ="liver" d="M 80 170 Q 110 165 120 180 L 110 200 L 80 190 Z" fill="#fde68a" stroke="#f59e0b" stroke-width="2" opacity="0.7"/>
+                        <!-- 胃 -->
+                        <ellipse class="body-part" data-organ="stomach" cx="90" cy="210" rx="15" ry="20" fill="#fed7aa" stroke="#f97316" stroke-width="2" opacity="0.7"/>
+                        <!-- 肠道 -->
+                        <path class="body-part" data-organ="intestine" d="M 85 230 Q 70 250 85 270 Q 100 290 115 270 Q 130 250 115 230" fill="#bbf7d0" stroke="#22c55e" stroke-width="2" opacity="0.6" fill="none" stroke-width="8"/>
+                        <!-- 手臂 -->
+                        <rect class="body-part" data-organ="muscle" x="30" y="100" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                        <rect class="body-part" data-organ="muscle" x="145" y="100" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                        <!-- 腿部 -->
+                        <rect class="body-part" data-organ="muscle" x="70" y="270" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                        <rect class="body-part" data-organ="muscle" x="105" y="270" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                    </svg>
+                    
+                    <div class="organ-info" id="organInfo">
+                        <h4 id="organTitle" style="margin-bottom: 0.5rem; color: var(--primary);"></h4>
+                        <p id="organDesc" style="font-size: 0.875rem; line-height: 1.5;"></p>
+                    </div>
+                </div>
+
+                <div class="recommendation-grid" style="margin-top: 2rem;">
+                    <div class="rec-card" onclick="showOrganDetail('brain')">
+                        <div class="rec-image" style="background: var(--gradient-3);">🧠</div>
+                        <div class="rec-content">
+                            <div class="rec-title">大脑与神经系统</div>
+                            <div class="rec-desc">仅占体重2%，消耗20%能量。包含860亿神经元，突触连接超过100万亿。</div>
+                            <div class="rec-tags">
+                                <span class="rec-tag">葡萄糖依赖</span>
+                                <span class="rec-tag">DHA</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rec-card" onclick="showOrganDetail('heart')">
+                        <div class="rec-image" style="background: var(--gradient-2);">❤️</div>
+                        <div class="rec-content">
+                            <div class="rec-title">心血管系统</div>
+                            <div class="rec-desc">每天泵血7000升，一生跳动25-30亿次。冠状动脉供血，心肌细胞极少再生。</div>
+                            <div class="rec-tags">
+                                <span class="rec-tag">CoQ10</span>
+                                <span class="rec-tag">Omega-3</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rec-card" onclick="showOrganDetail('liver')">
+                        <div class="rec-image" style="background: var(--gradient-4);">🫁</div>
+                        <div class="rec-content">
+                            <div class="rec-title">肝脏代谢中心</div>
+                            <div class="rec-desc">执行500+种功能，包括糖原储存、尿素循环、胆汁合成、药物代谢。</div>
+                            <div class="rec-tags">
+                                <span class="rec-tag">谷胱甘肽</span>
+                                <span class="rec-tag">B族维生素</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rec-card" onclick="showOrganDetail('muscle')">
+                        <div class="rec-image" style="background: var(--gradient-1);">💪</div>
+                        <div class="rec-content">
+                            <div class="rec-title">骨骼肌系统</div>
+                            <div class="rec-desc">600+块肌肉，占体重40%。含肌原纤维，通过肌丝滑动原理收缩。</div>
+                            <div class="rec-tags">
+                                <span class="rec-tag">蛋白质</span>
+                                <span class="rec-tag">肌酸</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 化学标签 -->
+        <div id="tab-chemistry" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #f97316);">⚗️</div>
+                    <div>
+                        <h2 class="card-title">人体必需元素周期表</h2>
+                        <p class="card-subtitle">点击元素查看生化功能与食物来源</p>
+                    </div>
+                </div>
+
+                <div class="periodic-table" id="periodicTable">
+                    <!-- 由JS生成 -->
+                </div>
+
+                <div class="chart-grid" style="margin-top: 2rem;">
+                    <div class="chart-box">
+                        <div class="chart-title">⚡ 电解质平衡</div>
+                        <div class="chart-container">
+                            <canvas id="electrolyteChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-title">🧬 微量元素需求</div>
+                        <div class="chart-container">
+                            <canvas id="traceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 1.5rem; border-radius: 1rem; margin-top: 2rem;">
+                    <h4 style="color: #92400e; margin-bottom: 1rem;">🔬 生物化学焦点：ATP合成</h4>
+                    <p style="color: #78350f; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
+                        线粒体通过氧化磷酸化产生ATP。电子传递链(ETC)建立质子梯度(Δp)，驱动ATP合酶(F₀F₁复合体)旋转催化。
+                        每分子NADH产生2.5 ATP，FADH₂产生1.5 ATP。
+                    </p>
+                    <div style="background: white; padding: 1rem; border-radius: 0.5rem; font-family: monospace; font-size: 0.875rem; color: #1f2937;">
+                        C₆H₁₂O₆ + 6O₂ + 38ADP + 38Pᵢ → 6CO₂ + 6H₂O + 38ATP (ΔG°' = -2868 kJ/mol)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 消化标签 -->
+        <div id="tab-digestion" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">🍽️</div>
+                    <div>
+                        <h2 class="card-title">消化系统时间轴</h2>
+                        <p class="card-subtitle">从口腔到肛门的奇妙旅程</p>
+                    </div>
+                </div>
+
+                <div class="digestion-timeline">
+                    <div class="timeline-line"></div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-icon">👄</div>
+                            <h4 style="font-weight: 700; margin-bottom: 0.5rem;">口腔 (0-5分钟)</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-light);">唾液淀粉酶(ptyalin)开始分解淀粉为麦芽糖。咀嚼刺激胃泌素释放。</p>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary); font-weight: 600;">pH: 6.5-7.5 | 酶: α-淀粉酶</div>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-icon">🦴</div>
+                            <h4 style="font-weight: 700; margin-bottom: 0.5rem;">食道 (5-10秒)</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-light);">蠕动波(peristalsis)推送食团。下食道括约肌(LES)防止胃酸反流。</p>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-icon">🫃</div>
+                            <h4 style="font-weight: 700; margin-bottom: 0.5rem;">胃 (2-4小时)</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-light);">胃蛋白酶原→胃蛋白酶(酸性环境激活)。胃脂酶分解短链脂肪。 intrinsic factor结合B₁₂。</p>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--danger); font-weight: 600;">pH: 1.5-3.5 | 胃蛋白酶最适pH 1.5-2.5</div>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-icon">🌀</div>
+                            <h4 style="font-weight: 700; margin-bottom: 0.5rem;">小肠 (3-5小时)</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-light);">主要消化场所。胰液(碳酸氢盐+酶)、胆汁乳化脂肪。绒毛增加表面积600倍。</p>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary); font-weight: 600;">pH: 7-8 | 胰淀粉酶、脂肪酶、蛋白酶</div>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <div class="timeline-icon">🧻</div>
+                            <h4 style="font-weight: 700; margin-bottom: 0.5rem;">大肠 (12-48小时)</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-light);">水分重吸收。肠道菌群发酵膳食纤维产生短链脂肪酸(SCFA)：乙酸、丙酸、丁酸。</p>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--purple); font-weight: 600;">菌群: 10¹⁴个细菌, 1000+物种</div>
+                        </div>
+                        <div class="timeline-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 推荐标签 -->
+        <div id="tab-recommend" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #ec4899, #f472b6);">💡</div>
+                    <div>
+                        <h2 class="card-title">个性化健康推荐</h2>
+                        <p class="card-subtitle">基于您的生物数据生成的专属方案</p>
+                    </div>
+                </div>
+
+                <div class="recommendation-grid" id="recommendations">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+
+            <!-- 名言轮播 -->
+            <div class="quote-carousel" id="quoteCarousel">
+                <div class="quote-slide">
+                    <div class="quote-text">"让食物成为你的药物，让药物成为你的食物。"</div>
+                    <div class="quote-author">—— 希波克拉底 (Hippocrates) | 医学之父</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer style="text-align: center; padding: 3rem 1rem; color: var(--text-light);">
+            <p style="font-weight: 600; margin-bottom: 0.5rem;">VitalityLab Pro © 2024</p>
+            <p style="font-size: 0.875rem; opacity: 0.8;">基于 WHO、NIH、Harvard Medical School 最新研究</p>
+            <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 1rem;">
+                🔒 隐私模式：所有计算在本地完成，数据不会上传服务器
+            </p>
+        </footer>
     </div>
-  </div>
-</div>
 
-<!-- ========== 模式选择界面 ========== -->
-<div id="modeScreen" class="screen z-30 p-4 hidden">
-  <div class="w-full max-w-2xl mx-auto">
-    <div class="flex items-center justify-between mb-6">
-      <button id="backToStart" class="btn glass px-4 py-2 rounded-xl text-white/70 text-sm">
-        <i class="fas fa-arrow-left mr-2"></i>返回
-      </button>
-      <h2 class="text-2xl font-bold">选择模式</h2>
-      <div class="w-20"></div>
+    <!-- 模态框 -->
+    <div class="modal" id="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div id="modalBody"></div>
+        </div>
     </div>
-    
-    <div class="grid gap-4 mb-6">
-      <!-- 简单模式 -->
-      <div class="mode-card glass-strong rounded-2xl p-5 slide-in" style="animation-delay:0.05s" data-mode="easy">
-        <div class="flex items-center gap-4">
-          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-2xl shadow-lg">
-            <i class="fas fa-seedling"></i>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-xl font-bold">简单模式</h3>
-            <p class="text-white/50 text-sm">适合新手，速度较慢</p>
-          </div>
-          <div class="text-right text-sm">
-            <div class="text-white/40">10×20 格</div>
-            <div class="text-green-400">慢速</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 困难模式 -->
-      <div class="mode-card glass-strong rounded-2xl p-5 slide-in" style="animation-delay:0.1s" data-mode="hard">
-        <div class="flex items-center gap-4">
-          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-2xl shadow-lg">
-            <i class="fas fa-fire"></i>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-xl font-bold">困难模式</h3>
-            <p class="text-white/50 text-sm">有障碍物，速度更快</p>
-          </div>
-          <div class="text-right text-sm">
-            <div class="text-white/40">12×24 格</div>
-            <div class="text-orange-400">快速</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 无限模式 -->
-      <div class="mode-card glass-strong rounded-2xl p-5 slide-in" style="animation-delay:0.15s" data-mode="endless">
-        <div class="flex items-center gap-4">
-          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-2xl shadow-lg">
-            <i class="fas fa-infinity"></i>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-xl font-bold">无限模式</h3>
-            <p class="text-white/50 text-sm">速度不断加快，挑战极限</p>
-          </div>
-          <div class="text-right text-sm">
-            <div class="text-white/40">10×20 格</div>
-            <div class="text-purple-400">递增</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 操作说明 -->
-    <div class="glass rounded-2xl p-4 slide-in" style="animation-delay:0.2s">
-      <h4 class="font-medium mb-3 text-white/70"><i class="fas fa-gamepad mr-2"></i>操作说明</h4>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-        <div class="text-center p-2 glass rounded-xl">
-          <div class="text-white/80 mb-1">← →</div>
-          <div class="text-white/40 text-xs">左右移动</div>
-        </div>
-        <div class="text-center p-2 glass rounded-xl">
-          <div class="text-white/80 mb-1">↑</div>
-          <div class="text-white/40 text-xs">旋转方块</div>
-        </div>
-        <div class="text-center p-2 glass rounded-xl">
-          <div class="text-white/80 mb-1">↓</div>
-          <div class="text-white/40 text-xs">加速下落</div>
-        </div>
-        <div class="text-center p-2 glass rounded-xl">
-          <div class="text-white/80 mb-1">空格</div>
-          <div class="text-white/40 text-xs">直接落地</div>
-        </div>
-      </div>
-      <p class="text-white/30 text-xs mt-3 text-center">手机用户可点击屏幕按钮或滑动操作</p>
-    </div>
-  </div>
-</div>
 
-<!-- ========== 游戏界面 ========== -->
-<div id="gameScreen" class="screen z-20 hidden">
-  <div class="w-full h-full flex flex-col lg:flex-row gap-3 p-3 max-w-5xl mx-auto">
-    
-    <!-- 左侧信息 -->
-    <div class="glass-strong rounded-2xl p-4 w-full lg:w-52 flex lg:flex-col gap-3 order-2 lg:order-1">
-      <div class="flex-1 lg:flex-none">
-        <div class="text-white/40 text-xs mb-1">下一个</div>
-        <div class="glass rounded-xl p-2 flex items-center justify-center h-16 lg:h-20">
-          <div id="nextPiece" class="grid gap-px"></div>
-        </div>
-      </div>
-      <div class="flex-1 lg:flex-none">
-        <div class="text-white/40 text-xs mb-1">保存 (C键)</div>
-        <div class="glass rounded-xl p-2 flex items-center justify-center h-16 lg:h-20">
-          <div id="holdPiece" class="grid gap-px"></div>
-        </div>
-      </div>
-      <div class="flex-1 lg:flex-none grid grid-cols-2 lg:grid-cols-1 gap-2">
-        <div class="glass rounded-xl p-2">
-          <div class="text-white/40 text-xs">分数</div>
-          <div id="score" class="text-lg font-bold text-amber-400">0</div>
-        </div>
-        <div class="glass rounded-xl p-2">
-          <div class="text-white/40 text-xs">时间</div>
-          <div id="timer" class="text-lg font-bold text-cyan-400">00:00</div>
-        </div>
-        <div class="glass rounded-xl p-2">
-          <div class="text-white/40 text-xs">等级</div>
-          <div id="level" class="text-lg font-bold text-purple-400">1</div>
-        </div>
-        <div class="glass rounded-xl p-2">
-          <div class="text-white/40 text-xs">消行</div>
-          <div id="lines" class="text-lg font-bold">0</div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 中间游戏区 -->
-    <div class="flex-1 flex flex-col items-center order-1 lg:order-2">
-      <div class="w-full flex items-center justify-between mb-3 px-1">
-        <button id="backToMode" class="btn glass px-3 py-1.5 rounded-lg text-white/60 text-sm">
-          <i class="fas fa-arrow-left mr-1"></i>返回
-        </button>
-        <div id="modeLabel" class="glass px-3 py-1.5 rounded-lg text-sm font-medium">简单模式</div>
-        <button id="exitGame" class="btn glass px-3 py-1.5 rounded-lg text-red-400/70 text-sm">
-          <i class="fas fa-times mr-1"></i>退出
-        </button>
-      </div>
-      
-      <div class="glass-strong rounded-2xl p-2 lg:p-3 relative">
-        <div id="gameBoard" class="grid gap-px"></div>
-        <div id="particleLayer" class="absolute inset-0 pointer-events-none overflow-hidden rounded-xl"></div>
-      </div>
-      
-      <div class="flex gap-2 mt-3">
-        <button id="playBtn" class="btn bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-2 rounded-xl font-medium text-sm">
-          <i class="fas fa-play mr-1"></i>开始
-        </button>
-        <button id="pauseBtn" class="btn glass px-5 py-2 rounded-xl text-sm" disabled>
-          <i class="fas fa-pause mr-1"></i>暂停
-        </button>
-        <button id="restartBtn" class="btn glass px-5 py-2 rounded-xl text-sm">
-          <i class="fas fa-redo mr-1"></i>重玩
-        </button>
-      </div>
-      
-      <div id="gameHint" class="text-white/40 text-xs mt-2">点击「开始」按钮开始游戏</div>
-    </div>
-    
-    <!-- 右侧控制 -->
-    <div class="glass-strong rounded-2xl p-4 w-full lg:w-52 order-3">
-      <div class="flex flex-col items-center gap-2">
-        <button id="rotateCtrl" class="ctrl-btn glass text-white"><i class="fas fa-sync-alt"></i></button>
-        <div class="flex gap-2">
-          <button id="leftCtrl" class="ctrl-btn glass text-white"><i class="fas fa-chevron-left"></i></button>
-          <button id="downCtrl" class="ctrl-btn glass text-white"><i class="fas fa-chevron-down"></i></button>
-          <button id="rightCtrl" class="ctrl-btn glass text-white"><i class="fas fa-chevron-right"></i></button>
-        </div>
-        <div class="flex gap-2">
-          <button id="holdCtrl" class="ctrl-btn glass text-white text-base"><i class="fas fa-box"></i></button>
-          <button id="dropCtrl" class="ctrl-btn glass text-white text-base"><i class="fas fa-angle-double-down"></i></button>
-        </div>
-      </div>
-      
-      <div class="mt-4 pt-3 border-t border-white/10">
-        <div class="text-white/40 text-xs mb-2">最高分</div>
-        <div id="highScore" class="text-xl font-bold text-amber-400">0</div>
-      </div>
-    </div>
-  </div>
-</div>
+    <script>
+        // 全局状态
+        let currentTab = 'overview';
+        let isPrivacyMode = false;
+        let userData = {};
+        let quotes = [
+            { text: "让食物成为你的药物，让药物成为你的食物。", author: "希波克拉底 (Hippocrates) | 医学之父" },
+            { text: "生命在于运动，但过度运动产生自由基氧化损伤。", author: "现代运动医学共识" },
+            { text: "肠道是人体的第二大脑，拥有1亿个神经元和复杂的神经网络。", author: "Michael Gershon | 神经胃肠病学先驱" },
+            { text: "睡眠是大脑清除β-淀粉样蛋白的关键时间窗口。", author: "Maiken Nedergaard | 类淋巴系统发现者" },
+            { text: "热量限制(CR)是目前唯一被证实可延长哺乳动物寿命的干预手段。", author: "Valter Longo | USC长寿研究所所长" },
+            { text: "线粒体不仅是能量工厂，也是细胞凋亡的调控中心和炎症信号平台。", author: "Douglas Wallace | 线粒体医学之父" },
+            { text: "蛋白质合成需要亮氨酸触发mTORC1信号通路，阈值剂量为3克。", author: "John Layman | 蛋白质代谢专家" },
+            { text: "肥胖是一种慢性低度炎症状态，脂肪组织分泌IL-6、TNF-α等促炎细胞因子。", author: "Gökhan Hotamisligil | 哈佛公共卫生学院" },
+            { text: "NAD⁺水平随年龄下降，补充NMN可激活Sirtuins长寿蛋白家族。", author: "David Sinclair | 哈佛大学衰老研究中心" },
+            { text: "肠道菌群产生的短链脂肪酸丁酸是结肠细胞的主要能量来源。", author: "Jeffrey Gordon | 华盛顿大学微生物组研究中心" }
+        ];
 
-<!-- ========== 游戏结束弹窗 ========== -->
-<div id="gameOverModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-  <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-  <div class="relative glass-strong rounded-3xl p-6 max-w-sm w-full text-center slide-in">
-    <div class="text-5xl mb-3">🎮</div>
-    <h2 class="text-2xl font-bold mb-1">游戏结束</h2>
-    <p id="endMessage" class="text-white/50 text-sm mb-4">再接再厉！</p>
-    
-    <div class="grid grid-cols-2 gap-3 mb-4">
-      <div class="glass rounded-xl p-3">
-        <div class="text-white/40 text-xs">最终得分</div>
-        <div id="finalScore" class="text-2xl font-bold text-amber-400">0</div>
-      </div>
-      <div class="glass rounded-xl p-3">
-        <div class="text-white/40 text-xs">存活时间</div>
-        <div id="finalTime" class="text-2xl font-bold text-cyan-400">00:00</div>
-      </div>
-    </div>
-    
-    <div id="newRecord" class="hidden bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-xl p-3 mb-4">
-      <i class="fas fa-trophy text-amber-400 mr-2"></i>
-      <span class="text-amber-400 font-bold">打破记录！</span>
-    </div>
-    
-    <div class="flex gap-2">
-      <button id="backToMenuBtn" class="btn flex-1 glass py-3 rounded-xl font-medium">
-        <i class="fas fa-home mr-1"></i>主菜单
-      </button>
-      <button id="playAgainBtn" class="btn flex-1 bg-gradient-to-r from-purple-500 to-pink-500 py-3 rounded-xl font-medium">
-        <i class="fas fa-redo mr-1"></i>再来一局
-      </button>
-    </div>
-  </div>
-</div>
+        // 元素数据
+        const elements = [
+            { symbol: 'H', name: '氢', mass: '1.008', type: 'essential', func: '水分子组成，pH调节' },
+            { symbol: 'C', name: '碳', mass: '12.01', type: 'essential', func: '有机分子骨架，能量储存' },
+            { symbol: 'N', name: '氮', mass: '14.01', type: 'essential', func: '氨基酸、核酸组成' },
+            { symbol: 'O', name: '氧', mass: '16.00', type: 'essential', func: '呼吸作用，能量产生' },
+            { symbol: 'Na', name: '钠', mass: '22.99', type: 'electrolyte', func: '神经传导，渗透压调节' },
+            { symbol: 'Mg', name: '镁', mass: '24.31', type: 'essential', func: '300+酶辅因子，ATP稳定' },
+            { symbol: 'P', name: '磷', mass: '30.97', type: 'essential', func: 'ATP、DNA、骨骼组成' },
+            { symbol: 'S', name: '硫', mass: '32.07', type: 'essential', func: '半胱氨酸、甲硫氨酸' },
+            { symbol: 'Cl', name: '氯', mass: '35.45', type: 'electrolyte', func: '胃酸组成，渗透压' },
+            { symbol: 'K', name: '钾', mass: '39.10', type: 'electrolyte', func: '神经肌肉功能，心律' },
+            { symbol: 'Ca', name: '钙', mass: '40.08', type: 'essential', func: '骨骼、信号传导、肌肉' },
+            { symbol: 'Fe', name: '铁', mass: '55.85', type: 'trace', func: '血红蛋白，氧运输' },
+            { symbol: 'Cu', name: '铜', mass: '63.55', type: 'trace', func: '细胞色素氧化酶' },
+            { symbol: 'Zn', name: '锌', mass: '65.38', type: 'trace', func: '碳酸酐酶，免疫功能' },
+            { symbol: 'Se', name: '硒', mass: '78.96', type: 'trace', func: '谷胱甘肽过氧化物酶' },
+            { symbol: 'I', name: '碘', mass: '126.9', type: 'trace', func: '甲状腺激素合成' }
+        ];
 
-<!-- ========== 排行榜弹窗 ========== -->
-<div id="rankModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-  <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-  <div class="relative glass-strong rounded-3xl p-6 max-w-md w-full slide-in">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-bold"><i class="fas fa-trophy text-amber-400 mr-2"></i>排行榜</h2>
-      <button id="closeRank" class="text-white/50 hover:text-white"><i class="fas fa-times text-xl"></i></button>
-    </div>
-    
-    <div class="flex gap-2 mb-4">
-      <button class="rank-tab flex-1 py-2 rounded-lg text-sm font-medium bg-white/10" data-tab="easy">简单</button>
-      <button class="rank-tab flex-1 py-2 rounded-lg text-sm font-medium" data-tab="hard">困难</button>
-      <button class="rank-tab flex-1 py-2 rounded-lg text-sm font-medium" data-tab="endless">无限</button>
-    </div>
-    
-    <div id="rankList" class="space-y-2 max-h-64 overflow-y-auto"></div>
-  </div>
-</div>
+        // 器官详情
+        const organDetails = {
+            brain: {
+                title: '🧠 大脑与神经系统',
+                content: `
+                    <h3 style="color: var(--primary); margin-bottom: 1rem;">神经生物学基础</h3>
+                    <p style="margin-bottom: 1rem;"><strong>能量代谢：</strong>大脑每天消耗约120g葡萄糖，占全身20%能量。血脑屏障(BBB)严格调控物质进入。</p>
+                    <p style="margin-bottom: 1rem;"><strong>神经递质：</strong>多巴胺(奖赏)、血清素(情绪)、GABA(抑制)、谷氨酸(兴奋)。</p>
+                    <p style="margin-bottom: 1rem;"><strong>关键营养素：</strong>DHA(占大脑脂肪酸25%)、胆碱(乙酰胆碱前体)、抗氧化物(维生素E、C)。</p>
+                    <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem; font-family: monospace; font-size: 0.875rem;">
+                        脑血流: 750ml/min | 神经元: 860亿 | 突触: 100-500万亿
+                    </div>
+                `
+            },
+            heart: {
+                title: '❤️ 心血管系统',
+                content: `
+                    <h3 style="color: var(--danger); margin-bottom: 1rem;">心脏生理学与生物化学</h3>
+                    <p style="margin-bottom: 1rem;"><strong>心肌代谢：</strong>优先使用脂肪酸(60-90%)，其次葡萄糖和乳酸。线粒体占心肌细胞体积30%。</p>
+                    <p style="margin-bottom: 1rem;"><strong>电生理：</strong>窦房结起搏→房室结延迟→希氏束→浦肯野纤维。动作电位平台期由Ca²⁺内流维持。</p>
+                    <p style="margin-bottom: 1rem;"><strong>保护因子：</strong>Omega-3(EPA/DHA)降低心律失常风险，CoQ10支持线粒体功能，镁调节钙通道。</p>
+                `
+            },
+            liver: {
+                title: '🫁 肝脏代谢中心',
+                content: `
+                    <h3 style="color: var(--accent); margin-bottom: 1rem;">肝脏的500+功能</h3>
+                    <p style="margin-bottom: 1rem;"><strong>糖代谢：</strong>糖原合成/分解、糖异生(GNG)。胰岛素抑制GNG，胰高血糖素促进。</p>
+                    <p style="margin-bottom: 1rem;"><strong>尿素循环：</strong>将有毒氨转化为尿素，每循环消耗3ATP，产生1尿素。</p>
+                    <p style="margin-bottom: 1rem;"><strong>解毒作用：</strong>细胞色素P450酶系(Phase I)，结合反应(Phase II：葡萄糖醛酸化、硫酸化、谷胱甘肽结合)。</p>
+                    <p style="margin-bottom: 1rem;"><strong>胆汁合成：</strong>胆固醇→胆酸→结合牛磺酸/甘氨酸，乳化脂肪。</p>
+                `
+            },
+            muscle: {
+                title: '💪 骨骼肌系统',
+                content: `
+                    <h3 style="color: var(--secondary); margin-bottom: 1rem;">肌肉收缩的分子机制</h3>
+                    <p style="margin-bottom: 1rem;"><strong>肌丝滑动理论：</strong>肌球蛋白头部结合肌动蛋白→构象变化→滑动→ATP结合释放。</p>
+                    <p style="margin-bottom: 1rem;"><strong>能量系统：</strong>磷酸原系统(ATP-PCr, 0-10s)、糖酵解(10s-2min)、氧化磷酸化(>2min)。</p>
+                    <p style="margin-bottom: 1rem;"><strong>蛋白质合成：</strong>mTORC1通路激活需要亮氨酸(>3g)、胰岛素、机械张力。</p>
+                    <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem;">
+                        <strong>肌纤维类型：</strong>Type I(慢肌, 氧化) | Type IIa(快肌氧化) | Type IIx(快肌糖酵解)
+                    </div>
+                `
+            }
+        };
 
-<script>
-// ============ 游戏配置 ============
-const CONFIG = {
-  easy: { cols: 10, rows: 20, baseSpeed: 800, speedStep: 50, obstacles: false, label: '简单模式' },
-  hard: { cols: 12, rows: 24, baseSpeed: 500, speedStep: 40, obstacles: true, label: '困难模式' },
-  endless: { cols: 10, rows: 20, baseSpeed: 700, speedStep: 30, obstacles: false, label: '无限模式' }
-};
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initParticles();
+            initFloatingEmojis();
+            initPeriodicTable();
+            initCharts();
+            initBodyInteractions();
+            startQuoteRotation();
+            
+            // 延迟显示动画
+            setTimeout(() => {
+                document.querySelectorAll('.card').forEach((card, i) => {
+                    setTimeout(() => card.style.opacity = '1', i * 100);
+                });
+            }, 500);
+        });
 
-// 七种标准方块
-const PIECES = {
-  I: { shape: [[1,1,1,1]], color: 'I' },
-  O: { shape: [[1,1],[1,1]], color: 'O' },
-  T: { shape: [[0,1,0],[1,1,1]], color: 'T' },
-  S: { shape: [[0,1,1],[1,1,0]], color: 'S' },
-  Z: { shape: [[1,1,0],[0,1,1]], color: 'Z' },
-  J: { shape: [[1,0,0],[1,1,1]], color: 'J' },
-  L: { shape: [[0,0,1],[1,1,1]], color: 'L' }
-};
-const PIECE_TYPES = Object.keys(PIECES);
-
-// ============ 游戏状态 ============
-let mode = 'easy';
-let cfg = CONFIG.easy;
-let board = [];
-let piece = null;
-let nextPiece = null;
-let holdData = null;
-let canHold = true;
-let score = 0;
-let level = 1;
-let linesCleared = 0;
-let gameTime = 0;
-let isRunning = false;
-let isPaused = false;
-let gameLoop = null;
-let timerLoop = null;
-let cellSize = 24;
-
-// 排行榜数据
-let rankings = {
-  easy: JSON.parse(localStorage.getItem('rank_easy') || '[]'),
-  hard: JSON.parse(localStorage.getItem('rank_hard') || '[]'),
-  endless: JSON.parse(localStorage.getItem('rank_endless') || '[]')
-};
-
-// ============ DOM ============
-const $ = id => document.getElementById(id);
-const screens = { start: $('startScreen'), mode: $('modeScreen'), game: $('gameScreen') };
-const els = {
-  board: $('gameBoard'),
-  next: $('nextPiece'),
-  hold: $('holdPiece'),
-  score: $('score'),
-  timer: $('timer'),
-  level: $('level'),
-  lines: $('lines'),
-  highScore: $('highScore'),
-  modeLabel: $('modeLabel'),
-  hint: $('gameHint'),
-  particles: $('particleLayer'),
-  playBtn: $('playBtn'),
-  pauseBtn: $('pauseBtn'),
-  restartBtn: $('restartBtn'),
-  gameOverModal: $('gameOverModal'),
-  finalScore: $('finalScore'),
-  finalTime: $('finalTime'),
-  endMessage: $('endMessage'),
-  newRecord: $('newRecord'),
-  rankModal: $('rankModal'),
-  rankList: $('rankList')
-};
-
-// ============ 界面切换 ============
-function showScreen(name) {
-  Object.values(screens).forEach(s => s.classList.add('hidden'));
-  screens[name].classList.remove('hidden');
-}
-
-$('startBtn').onclick = () => showScreen('mode');
-$('backToStart').onclick = () => showScreen('start');
-$('backToMode').onclick = () => { stopGame(); showScreen('mode'); };
-$('exitGame').onclick = () => { stopGame(); showScreen('start'); };
-$('backToMenuBtn').onclick = () => { els.gameOverModal.classList.add('hidden'); showScreen('mode'); };
-$('closeRank').onclick = () => els.rankModal.classList.add('hidden');
-
-// 模式选择
-document.querySelectorAll('.mode-card').forEach(card => {
-  card.onclick = () => {
-    mode = card.dataset.mode;
-    cfg = CONFIG[mode];
-    els.modeLabel.textContent = cfg.label;
-    initGame();
-    showScreen('game');
-  };
-});
-
-// ============ 游戏初始化 ============
-function initGame() {
-  // 计算格子大小
-  const maxW = Math.min(window.innerWidth - 280, 450);
-  cellSize = Math.max(14, Math.min(24, Math.floor(maxW / cfg.cols) - 1));
-  
-  // 初始化棋盘
-  board = Array(cfg.rows).fill(null).map(() => Array(cfg.cols).fill(0));
-  
-  // 困难模式添加障碍物
-  if (cfg.obstacles) addObstacles();
-  
-  // 渲染棋盘
-  renderBoard();
-  
-  // 重置状态
-  score = 0;
-  level = 1;
-  linesCleared = 0;
-  gameTime = 0;
-  piece = null;
-  nextPiece = null;
-  holdData = null;
-  canHold = true;
-  isRunning = false;
-  isPaused = false;
-  
-  // 更新UI
-  updateStats();
-  renderPreview(els.next, null);
-  renderPreview(els.hold, null);
-  
-  // 更新最高分显示
-  const top = rankings[mode][0];
-  els.highScore.textContent = top ? top.score : 0;
-  
-  els.playBtn.innerHTML = '<i class="fas fa-play mr-1"></i>开始';
-  els.playBtn.disabled = false;
-  els.pauseBtn.disabled = true;
-  els.hint.textContent = '点击「开始」按钮开始游戏';
-}
-
-function addObstacles() {
-  // 在底部15%区域随机放置障碍物
-  const startRow = Math.floor(cfg.rows * 0.85);
-  for (let r = startRow; r < cfg.rows; r++) {
-    const numBlocks = Math.floor(cfg.cols * 0.3);
-    const positions = [];
-    while (positions.length < numBlocks) {
-      const c = Math.floor(Math.random() * cfg.cols);
-      if (!positions.includes(c)) positions.push(c);
-    }
-    positions.forEach(c => { board[r][c] = 'obstacle'; });
-  }
-}
-
-function renderBoard() {
-  els.board.innerHTML = '';
-  els.board.style.gridTemplateColumns = `repeat(${cfg.cols}, ${cellSize}px)`;
-  els.board.style.width = `${cfg.cols * (cellSize + 1)}px`;
-  
-  for (let r = 0; r < cfg.rows; r++) {
-    for (let c = 0; c < cfg.cols; c++) {
-      const cell = document.createElement('div');
-      cell.className = 'cell';
-      cell.style.width = cell.style.height = `${cellSize}px`;
-      cell.dataset.r = r;
-      cell.dataset.c = c;
-      
-      if (board[r][c] === 'obstacle') {
-        cell.classList.add('cell-obstacle');
-      } else {
-        cell.style.background = 'rgba(255,255,255,0.02)';
-      }
-      
-      els.board.appendChild(cell);
-    }
-  }
-}
-
-// ============ 方块逻辑 ============
-function createPiece(type) {
-  const p = PIECES[type];
-  return {
-    type,
-    shape: p.shape.map(row => [...row]),
-    color: p.color,
-    x: Math.floor(cfg.cols / 2) - Math.ceil(p.shape[0].length / 2),
-    y: 0
-  };
-}
-
-function randomPiece() {
-  return createPiece(PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)]);
-}
-
-function spawnPiece() {
-  piece = nextPiece || randomPiece();
-  nextPiece = randomPiece();
-  canHold = true;
-  
-  renderPreview(els.next, nextPiece);
-  
-  // 检查游戏结束
-  if (!canMove(piece.x, piece.y, piece.shape)) {
-    endGame();
-  }
-}
-
-function renderPreview(el, p) {
-  el.innerHTML = '';
-  if (!p) return;
-  
-  const size = 14;
-  el.style.gridTemplateColumns = `repeat(${p.shape[0].length}, ${size}px)`;
-  
-  p.shape.forEach(row => {
-    row.forEach(v => {
-      const cell = document.createElement('div');
-      cell.style.width = cell.style.height = `${size}px`;
-      cell.style.borderRadius = '2px';
-      cell.className = v ? `cell-${p.color}` : '';
-      el.appendChild(cell);
-    });
-  });
-}
-
-function canMove(x, y, shape) {
-  return shape.every((row, r) =>
-    row.every((v, c) => {
-      if (!v) return true;
-      const bx = x + c, by = y + r;
-      return bx >= 0 && bx < cfg.cols && by < cfg.rows && (by < 0 || !board[by][bx]);
-    })
-  );
-}
-
-function rotate() {
-  if (!piece || !isRunning || isPaused) return;
-  
-  const rotated = piece.shape[0].map((_, i) => piece.shape.map(row => row[i]).reverse());
-  const kicks = [0, -1, 1, -2, 2];
-  
-  for (const k of kicks) {
-    if (canMove(piece.x + k, piece.y, rotated)) {
-      piece.shape = rotated;
-      piece.x += k;
-      draw();
-      return;
-    }
-  }
-}
-
-function move(dx, dy) {
-  if (!piece || !isRunning || isPaused) return false;
-  
-  if (canMove(piece.x + dx, piece.y + dy, piece.shape)) {
-    piece.x += dx;
-    piece.y += dy;
-    draw();
-    return true;
-  } else if (dy > 0) {
-    lock();
-  }
-  return false;
-}
-
-function drop() {
-  if (!piece || !isRunning || isPaused) return;
-  
-  let dist = 0;
-  while (canMove(piece.x, piece.y + 1, piece.shape)) {
-    piece.y++;
-    dist++;
-  }
-  score += dist * 2;
-  updateStats();
-  lock();
-}
-
-function hold() {
-  if (!canHold || !isRunning || isPaused || !piece) return;
-  
-  canHold = false;
-  const type = piece.type;
-  
-  if (holdData) {
-    piece = createPiece(holdData);
-    holdData = type;
-  } else {
-    holdData = type;
-    spawnPiece();
-  }
-  
-  renderPreview(els.hold, createPiece(holdData));
-  draw();
-}
-
-function lock() {
-  // 将方块固定到棋盘
-  piece.shape.forEach((row, r) => {
-    row.forEach((v, c) => {
-      if (v) {
-        const by = piece.y + r, bx = piece.x + c;
-        if (by >= 0 && by < cfg.rows) {
-          board[by][bx] = piece.color;
+        // 粒子系统
+        function initParticles() {
+            const container = document.getElementById('particles');
+            const colors = ['#10b981', '#0ea5e9', '#f59e0b', '#ec4899', '#8b5cf6'];
+            
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.width = Math.random() * 10 + 5 + 'px';
+                p.style.height = p.style.width;
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (15 + Math.random() * 10) + 's';
+                p.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(p);
+            }
         }
-      }
-    });
-  });
-  
-  // 检查消行
-  checkLines();
-  
-  // 生成新方块
-  spawnPiece();
-  draw();
-}
 
-function checkLines() {
-  const toClear = [];
-  
-  // 找出所有满行
-  for (let r = 0; r < cfg.rows; r++) {
-    let full = true;
-    for (let c = 0; c < cfg.cols; c++) {
-      if (!board[r][c] || board[r][c] === 'obstacle') {
-        full = false;
-        break;
-      }
-    }
-    if (full) toClear.push(r);
-  }
-  
-  if (toClear.length === 0) return;
-  
-  // 消行动画
-  const cells = els.board.children;
-  toClear.forEach(r => {
-    for (let c = 0; c < cfg.cols; c++) {
-      const idx = r * cfg.cols + c;
-      cells[idx].classList.add('line-clear');
-      spawnParticles(cells[idx]);
-    }
-  });
-  
-  // 震动效果
-  els.board.parentElement.classList.add('shake');
-  setTimeout(() => els.board.parentElement.classList.remove('shake'), 400);
-  
-  // 分数弹出
-  showScorePopup(toClear.length);
-  
-  setTimeout(() => {
-    // 从下往上移除满行
-    toClear.sort((a, b) => b - a).forEach(r => {
-      board.splice(r, 1);
-      board.unshift(Array(cfg.cols).fill(0));
-    });
-    
-    // 计分：1行100分，2行300分，3行500分，4行800分
-    const points = [0, 100, 300, 500, 800];
-    score += points[Math.min(toClear.length, 4)] * level;
-    linesCleared += toClear.length;
-    
-    // 升级：每10行升一级
-    const newLevel = Math.floor(linesCleared / 10) + 1;
-    if (newLevel > level) {
-      level = newLevel;
-      // 无限模式速度持续加快
-      if (mode === 'endless') {
-        restartLoop();
-      }
-    }
-    
-    // 普通模式每升一级加速
-    if (mode !== 'endless' && newLevel > level) {
-      restartLoop();
-    }
-    
-    updateStats();
-    draw();
-  }, 350);
-}
-
-function spawnParticles(cell) {
-  const rect = cell.getBoundingClientRect();
-  const containerRect = els.particles.getBoundingClientRect();
-  
-  for (let i = 0; i < 5; i++) {
-    const p = document.createElement('div');
-    p.className = 'absolute w-2 h-2 rounded-full';
-    p.style.left = `${rect.left - containerRect.left + Math.random() * rect.width}px`;
-    p.style.top = `${rect.top - containerRect.top}px`;
-    p.style.background = `hsl(${Math.random() * 60 + 30}, 100%, 60%)`;
-    p.style.animation = 'scorePopup 0.6s ease-out forwards';
-    els.particles.appendChild(p);
-    setTimeout(() => p.remove(), 600);
-  }
-}
-
-function showScorePopup(numLines) {
-  const texts = ['', '+100', '+300', '+500', '+800'];
-  const popup = document.createElement('div');
-  popup.className = 'score-popup';
-  popup.textContent = texts[Math.min(numLines, 4)];
-  popup.style.left = '50%';
-  popup.style.top = '40%';
-  popup.style.transform = 'translateX(-50%)';
-  els.particles.appendChild(popup);
-  setTimeout(() => popup.remove(), 800);
-}
-
-function draw() {
-  const cells = els.board.children;
-  
-  // 重绘棋盘
-  for (let r = 0; r < cfg.rows; r++) {
-    for (let c = 0; c < cfg.cols; c++) {
-      const cell = cells[r * cfg.cols + c];
-      cell.className = 'cell';
-      
-      if (board[r][c] === 'obstacle') {
-        cell.classList.add('cell-obstacle');
-      } else if (board[r][c]) {
-        cell.classList.add(`cell-${board[r][c]}`);
-      } else {
-        cell.style.background = 'rgba(255,255,255,0.02)';
-      }
-    }
-  }
-  
-  if (!piece) return;
-  
-  // 绘制幽灵方块
-  let ghostY = piece.y;
-  while (canMove(piece.x, ghostY + 1, piece.shape)) ghostY++;
-  
-  piece.shape.forEach((row, r) => {
-    row.forEach((v, c) => {
-      if (v) {
-        const by = ghostY + r, bx = piece.x + c;
-        if (by >= 0 && by < cfg.rows && bx >= 0 && bx < cfg.cols) {
-          const cell = cells[by * cfg.cols + bx];
-          if (!board[by][bx]) cell.classList.add('ghost-cell');
+        // 浮动表情
+        function initFloatingEmojis() {
+            const container = document.getElementById('floatingEmojis');
+            const emojis = ['🌱', '🧬', '⚡', '💊', '🍎', '🧪', '💪', '🧠', '❤️', '🫁'];
+            
+            emojis.forEach((emoji, i) => {
+                const el = document.createElement('div');
+                el.className = 'floating-emoji';
+                el.textContent = emoji;
+                el.style.left = (Math.random() * 90 + 5) + '%';
+                el.style.top = (Math.random() * 90 + 5) + '%';
+                el.style.animationDelay = (i * 0.5) + 's';
+                el.style.animationDuration = (6 + Math.random() * 4) + 's';
+                container.appendChild(el);
+            });
         }
-      }
-    });
-  });
-  
-  // 绘制当前方块
-  piece.shape.forEach((row, r) => {
-    row.forEach((v, c) => {
-      if (v) {
-        const by = piece.y + r, bx = piece.x + c;
-        if (by >= 0 && by < cfg.rows && bx >= 0 && bx < cfg.cols) {
-          const cell = cells[by * cfg.cols + bx];
-          cell.className = `cell cell-${piece.color}`;
+
+        // 元素周期表
+        function initPeriodicTable() {
+            const container = document.getElementById('periodicTable');
+            elements.forEach(el => {
+                const div = document.createElement('div');
+                div.className = `element element-${el.type}`;
+                div.innerHTML = `
+                    <span class="element-symbol">${el.symbol}</span>
+                    <span class="element-name">${el.name}</span>
+                    <span class="element-mass">${el.mass}</span>
+                `;
+                div.onclick = () => showElementDetail(el);
+                container.appendChild(div);
+            });
         }
-      }
-    });
-  });
-}
 
-// ============ 游戏控制 ============
-function startGame() {
-  if (isRunning && !isPaused) return;
-  
-  if (!isRunning) {
-    initGame();
-    spawnPiece();
-  }
-  
-  isRunning = true;
-  isPaused = false;
-  
-  // 开始计时
-  timerLoop = setInterval(() => {
-    gameTime++;
-    els.timer.textContent = formatTime(gameTime);
-  }, 1000);
-  
-  // 开始游戏循环
-  restartLoop();
-  
-  els.playBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>进行中';
-  els.playBtn.disabled = true;
-  els.pauseBtn.disabled = false;
-  els.hint.textContent = '游戏进行中...';
-  
-  draw();
-}
+        // 图表初始化
+        function initCharts() {
+            // 身体成分饼图
+            createPieChart('bodyChart', [
+                { label: '水分', value: 60, color: '#3b82f6' },
+                { label: '脂肪', value: 20, color: '#f59e0b' },
+                { label: '蛋白质', value: 15, color: '#ef4444' },
+                { label: '矿物质', value: 5, color: '#8b5cf6' }
+            ]);
 
-function pauseGame() {
-  if (!isRunning) return;
-  
-  isPaused = !isPaused;
-  
-  if (isPaused) {
-    clearInterval(gameLoop);
-    clearInterval(timerLoop);
-    els.pauseBtn.innerHTML = '<i class="fas fa-play mr-1"></i>继续';
-    els.hint.textContent = '游戏已暂停';
-  } else {
-    timerLoop = setInterval(() => {
-      gameTime++;
-      els.timer.textContent = formatTime(gameTime);
-    }, 1000);
-    restartLoop();
-    els.pauseBtn.innerHTML = '<i class="fas fa-pause mr-1"></i>暂停';
-    els.hint.textContent = '游戏进行中...';
-  }
-}
+            // 风险雷达图
+            createRadarChart('riskChart', [
+                { label: '心血管', value: 80 },
+                { label: '代谢', value: 70 },
+                { label: '营养', value: 85 },
+                { label: '运动', value: 60 },
+                { label: '睡眠', value: 75 }
+            ]);
 
-function stopGame() {
-  isRunning = false;
-  isPaused = false;
-  clearInterval(gameLoop);
-  clearInterval(timerLoop);
-}
+            // 体重预测折线图
+            createLineChart('weightChart', [
+                { label: '当前', value: 70 },
+                { label: '1月', value: 68 },
+                { label: '3月', value: 65 },
+                { label: '6月', value: 63 },
+                { label: '1年', value: 62 }
+            ]);
 
-function restartLoop() {
-  clearInterval(gameLoop);
-  // 无限模式：速度随时间递增
-  let speed = cfg.baseSpeed - (level - 1) * cfg.speedStep;
-  if (mode === 'endless') {
-    speed = Math.max(50, cfg.baseSpeed - gameTime * 2);
-  }
-  speed = Math.max(50, speed);
-  gameLoop = setInterval(() => move(0, 1), speed);
-}
+            // 营养素柱状图
+            createBarChart('nutritionChart', [
+                { label: '蛋白质', value: 100, color: '#ef4444' },
+                { label: '碳水', value: 120, color: '#f59e0b' },
+                { label: '脂肪', value: 65, color: '#3b82f6' },
+                { label: '纤维', value: 30, color: '#10b981' }
+            ]);
 
-function endGame() {
-  stopGame();
-  
-  // 保存分数
-  const record = { score, time: gameTime, lines: linesCleared, date: new Date().toLocaleDateString() };
-  rankings[mode].push(record);
-  rankings[mode].sort((a, b) => b.score - a.score);
-  rankings[mode] = rankings[mode].slice(0, 10);
-  localStorage.setItem(`rank_${mode}`, JSON.stringify(rankings[mode]));
-  
-  // 检查是否破纪录
-  const isNewRecord = rankings[mode][0].score === score && rankings[mode].length > 1;
-  
-  els.finalScore.textContent = score.toLocaleString();
-  els.finalTime.textContent = formatTime(gameTime);
-  els.endMessage.textContent = mode === 'endless' ? `你坚持了 ${formatTime(gameTime)}！` : '再接再厉！';
-  
-  if (isNewRecord) {
-    els.newRecord.classList.remove('hidden');
-  } else {
-    els.newRecord.classList.add('hidden');
-  }
-  
-  els.gameOverModal.classList.remove('hidden');
-  
-  els.playBtn.innerHTML = '<i class="fas fa-play mr-1"></i>开始';
-  els.playBtn.disabled = false;
-  els.pauseBtn.disabled = true;
-  els.hint.textContent = '游戏结束';
-}
+            // 电解质图
+            createBarChart('electrolyteChart', [
+                { label: 'Na⁺', value: 140, color: '#3b82f6' },
+                { label: 'K⁺', value: 4.5, color: '#10b981' },
+                { label: 'Ca²⁺', value: 2.5, color: '#f59e0b' },
+                { label: 'Mg²⁺', value: 1.0, color: '#8b5cf6' }
+            ]);
 
-function updateStats() {
-  els.score.textContent = score.toLocaleString();
-  els.level.textContent = level;
-  els.lines.textContent = linesCleared;
-}
+            // 微量元素
+            createPieChart('traceChart', [
+                { label: '铁', value: 40, color: '#ef4444' },
+                { label: '锌', value: 25, color: '#f59e0b' },
+                { label: '铜', value: 15, color: '#8b5cf6' },
+                { label: '硒', value: 10, color: '#10b981' },
+                { label: '碘', value: 10, color: '#0ea5e9' }
+            ]);
+        }
 
-function formatTime(s) {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-}
+        // Canvas图表函数
+        function createPieChart(canvasId, data) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const radius = Math.min(centerX, centerY) - 40;
+            
+            let total = data.reduce((a, b) => a + b.value, 0);
+            let currentAngle = -Math.PI / 2;
+            
+            data.forEach(item => {
+                const sliceAngle = (item.value / total) * 2 * Math.PI;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = item.color;
+                ctx.fill();
+                
+                // 标签
+                const labelAngle = currentAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(labelAngle) * (radius + 20);
+                const labelY = centerY + Math.sin(labelAngle) * (radius + 20);
+                
+                ctx.fillStyle = '#374151';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.label, labelX, labelY);
+                ctx.fillText(item.value + '%', labelX, labelY + 14);
+                
+                currentAngle += sliceAngle;
+            });
+        }
 
-// ============ 排行榜 ============
-function showRanking(tab) {
-  document.querySelectorAll('.rank-tab').forEach(t => {
-    t.classList.toggle('bg-white/10', t.dataset.tab === tab);
-  });
-  
-  const list = rankings[tab];
-  els.rankList.innerHTML = list.length === 0 
-    ? '<div class="text-center text-white/40 py-8">暂无记录</div>'
-    : list.map((r, i) => `
-      <div class="rank-item flex items-center gap-3 p-3 rounded-xl ${i === 0 ? 'bg-amber-500/10' : ''}">
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold ${i === 0 ? 'bg-amber-500 text-black' : i === 1 ? 'bg-gray-400 text-black' : i === 2 ? 'bg-amber-700 text-white' : 'bg-white/10'}">${i + 1}</div>
-        <div class="flex-1">
-          <div class="font-bold">${r.score.toLocaleString()} 分</div>
-          <div class="text-white/40 text-xs">${r.date}</div>
-        </div>
-        <div class="text-right text-sm">
-          <div class="text-cyan-400">${formatTime(r.time)}</div>
-          <div class="text-white/40 text-xs">${r.lines} 行</div>
-        </div>
-      </div>
-    `).join('');
-}
+        function createRadarChart(canvasId, data) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const radius = Math.min(centerX, centerY) - 40;
+            const sides = data.length;
+            
+            // 绘制网格
+            for (let i = 1; i <= 5; i++) {
+                ctx.beginPath();
+                for (let j = 0; j < sides; j++) {
+                    const angle = (Math.PI * 2 * j) / sides - Math.PI / 2;
+                    const r = (radius * i) / 5;
+                    const x = centerX + Math.cos(angle) * r;
+                    const y = centerY + Math.sin(angle) * r;
+                    if (j === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.strokeStyle = '#e5e7eb';
+                ctx.stroke();
+            }
+            
+            // 绘制数据
+            ctx.beginPath();
+            data.forEach((item, i) => {
+                const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
+                const r = (item.value / 100) * radius;
+                const x = centerX + Math.cos(angle) * r;
+                const y = centerY + Math.sin(angle) * r;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+            ctx.fill();
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 标签
+            data.forEach((item, i) => {
+                const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
+                const x = centerX + Math.cos(angle) * (radius + 25);
+                const y = centerY + Math.sin(angle) * (radius + 25);
+                ctx.fillStyle = '#374151';
+                ctx.font = '11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.label, x, y);
+            });
+        }
 
-document.querySelectorAll('.rank-tab').forEach(tab => {
-  tab.onclick = () => showRanking(tab.dataset.tab);
-});
+        function createLineChart(canvasId, data) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            
+            const padding = 40;
+            const chartWidth = rect.width - padding * 2;
+            const chartHeight = rect.height - padding * 2;
+            
+            const max = Math.max(...data.map(d => d.value));
+            const min = Math.min(...data.map(d => d.value));
+            const range = max - min;
+            
+            // 绘制线条
+            ctx.beginPath();
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            data.forEach((item, i) => {
+                const x = padding + (i / (data.length - 1)) * chartWidth;
+                const y = rect.height - padding - ((item.value - min) / range) * chartHeight;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            // 绘制点
+            data.forEach((item, i) => {
+                const x = padding + (i / (data.length - 1)) * chartWidth;
+                const y = rect.height - padding - ((item.value - min) / range) * chartHeight;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = '#10b981';
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 标签
+                ctx.fillStyle = '#374151';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.value + 'kg', x, y - 10);
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(item.label, x, rect.height - 20);
+            });
+        }
 
-// ============ 输入处理 ============
-document.addEventListener('keydown', e => {
-  if (screens.game.classList.contains('hidden')) return;
-  
-  switch (e.key) {
-    case 'ArrowLeft': e.preventDefault(); move(-1, 0); break;
-    case 'ArrowRight': e.preventDefault(); move(1, 0); break;
-    case 'ArrowDown': e.preventDefault(); if (move(0, 1)) { score += 1; updateStats(); } break;
-    case 'ArrowUp': e.preventDefault(); rotate(); break;
-    case ' ': e.preventDefault(); drop(); break;
-    case 'c': case 'C': hold(); break;
-    case 'p': case 'P': if (isRunning) pauseGame(); break;
-    case 'Escape': if (isRunning) pauseGame(); break;
-  }
-});
+        function createBarChart(canvasId, data) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            
+            const barWidth = (rect.width - 80) / data.length;
+            const max = Math.max(...data.map(d => d.value));
+            
+            data.forEach((item, i) => {
+                const height = (item.value / max) * (rect.height - 60);
+                const x = 40 + i * barWidth + barWidth * 0.1;
+                const y = rect.height - 30 - height;
+                
+                // 渐变
+                const gradient = ctx.createLinearGradient(0, y, 0, y + height);
+                gradient.addColorStop(0, item.color);
+                gradient.addColorStop(1, item.color + '80');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, barWidth * 0.8, height);
+                
+                // 标签
+                ctx.fillStyle = '#374151';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.value + 'g', x + barWidth * 0.4, y - 5);
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(item.label, x + barWidth * 0.4, rect.height - 10);
+            });
+        }
 
-// 鼠标点击
-els.board.addEventListener('click', e => {
-  if (!isRunning || isPaused || !piece) return;
-  const rect = els.board.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  if (x < rect.width / 3) move(-1, 0);
-  else if (x > rect.width * 2 / 3) move(1, 0);
-  else rotate();
-});
+        // 人体交互
+        function initBodyInteractions() {
+            const parts = document.querySelectorAll('.body-part');
+            const info = document.getElementById('organInfo');
+            
+            parts.forEach(part => {
+                part.addEventListener('click', (e) => {
+                    const organ = part.getAttribute('data-organ');
+                    showOrganDetail(organ);
+                    
+                    // 高亮效果
+                    parts.forEach(p => p.classList.remove('active'));
+                    part.classList.add('active');
+                });
+                
+                part.addEventListener('mouseenter', (e) => {
+                    const organ = part.getAttribute('data-organ');
+                    const names = {
+                        brain: '大脑', heart: '心脏', lung: '肺部',
+                        liver: '肝脏', stomach: '胃部', intestine: '肠道',
+                        muscle: '肌肉', digestive: '消化系统'
+                    };
+                    
+                    info.style.display = 'block';
+                    info.style.left = e.pageX + 10 + 'px';
+                    info.style.top = e.pageY + 10 + 'px';
+                    document.getElementById('organTitle').textContent = names[organ] || organ;
+                    document.getElementById('organDesc').textContent = '点击查看详细生理机制';
+                });
+                
+                part.addEventListener('mouseleave', () => {
+                    info.style.display = 'none';
+                });
+            });
+        }
 
-// 触摸滑动
-let touchX = 0, touchY = 0, lastTap = 0;
-els.board.addEventListener('touchstart', e => {
-  touchX = e.touches[0].clientX;
-  touchY = e.touches[0].clientY;
-}, { passive: true });
+        // 标签切换
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+            currentTab = tab;
+            
+            // 重新渲染图表
+            if (tab === 'overview') setTimeout(initCharts, 100);
+        }
 
-els.board.addEventListener('touchend', e => {
-  if (!isRunning || isPaused) return;
-  
-  const dx = e.changedTouches[0].clientX - touchX;
-  const dy = e.changedTouches[0].clientY - touchY;
-  
-  // 双击检测
-  const now = Date.now();
-  if (now - lastTap < 300) { drop(); lastTap = 0; return; }
-  lastTap = now;
-  
-  if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
-    rotate();
-  } else if (Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 20) move(1, 0);
-    else if (dx < -20) move(-1, 0);
-  } else {
-    if (dy > 20 && move(0, 1)) { score += 1; updateStats(); }
-  }
-}, { passive: true });
+        // 核心计算
+        function calculateAll(force = false) {
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const age = parseFloat(document.getElementById('age').value);
+            const gender = document.getElementById('gender').value;
+            const waist = parseFloat(document.getElementById('waist').value) || 0;
+            const goal = document.getElementById('goal').value;
+            
+            if (!height || !weight || !age) {
+                if (force) showToast('请填写完整的身体数据 📋');
+                return;
+            }
+            
+            userData = { height, weight, age, gender, waist, goal };
+            
+            // BMI
+            const heightM = height / 100;
+            const bmi = weight / (heightM * heightM);
+            
+            // BMR (Mifflin-St Jeor)
+            let bmr = (10 * weight) + (6.25 * height) - (5 * age) + (gender === 'male' ? 5 : -161);
+            
+            // TDEE
+            const activityMultipliers = { maintain: 1.375, lose: 1.2, gain: 1.55, performance: 1.725 };
+            const tdee = bmr * activityMultipliers[goal];
+            
+            // 体脂率 (Deurenberg)
+            const bfp = (1.20 * bmi) + (0.23 * age) - (10.8 * (gender === 'male' ? 1 : 0)) - 5.4;
+            
+            // 理想体重
+            const idealMin = 18.5 * heightM * heightM;
+            const idealMax = 24 * heightM * heightM;
+            
+            // MET
+            const met = bmr / (3.5 * weight);
+            
+            // 更新显示
+            document.getElementById('bmiValue').textContent = bmi.toFixed(1);
+            document.getElementById('bmrValue').textContent = Math.round(bmr);
+            document.getElementById('bfpValue').textContent = bfp.toFixed(1) + '%';
+            document.getElementById('idealWeight').textContent = Math.round((idealMin + idealMax) / 2);
+            document.getElementById('tdeeValue').textContent = Math.round(tdee);
+            document.getElementById('metValue').textContent = met.toFixed(1);
+            
+            // 状态标签
+            updateStatus('bmiStatus', bmi, [
+                { max: 18.5, text: '偏瘦', class: 'status-warning' },
+                { max: 24, text: '正常', class: 'status-good' },
+                { max: 28, text: '超重', class: 'status-warning' },
+                { max: 99, text: '肥胖', class: 'status-danger' }
+            ]);
+            
+            updateStatus('bfpStatus', bfp, [
+                { max: gender === 'male' ? 10 : 20, text: '偏低', class: 'status-warning' },
+                { max: gender === 'male' ? 20 : 30, text: '健康', class: 'status-good' },
+                { max: gender === 'male' ? 25 : 35, text: '偏高', class: 'status-warning' },
+                { max: 99, text: '过高', class: 'status-danger' }
+            ]);
+            
+            // 生成推荐
+            generateRecommendations(bmi, bfp, tdee, goal);
+            
+            // 检查彩蛋
+            checkEasterEggs(bmi, weight, height);
+            
+            showToast('分析完成！🎉');
+        }
 
-// 按钮事件
-els.playBtn.onclick = startGame;
-els.pauseBtn.onclick = pauseGame;
-els.restartBtn.onclick = () => { stopGame(); initGame(); startGame(); };
-$('playAgainBtn').onclick = () => { els.gameOverModal.classList.add('hidden'); initGame(); startGame(); };
+        function updateStatus(elementId, value, ranges) {
+            const el = document.getElementById(elementId);
+            for (let range of ranges) {
+                if (value <= range.max) {
+                    el.textContent = range.text;
+                    el.className = 'metric-status ' + range.class;
+                    return;
+                }
+            }
+        }
 
-$('leftCtrl').onclick = () => move(-1, 0);
-$('rightCtrl').onclick = () => move(1, 0);
-$('downCtrl').onclick = () => { if (move(0, 1)) { score += 1; updateStats(); } };
-$('rotateCtrl').onclick = rotate;
-$('dropCtrl').onclick = drop;
-$('holdCtrl').onclick = hold;
+        // 生成推荐
+        function generateRecommendations(bmi, bfp, tdee, goal) {
+            const container = document.getElementById('recommendations');
+            const recommendations = [];
+            
+            // 基于BMI
+            if (bmi > 24) {
+                recommendations.push({
+                    icon: '🏃',
+                    title: '有氧训练计划',
+                    desc: '每周150分钟中等强度有氧，或75分钟高强度。推荐心率区间：最大心率的60-70%。',
+                    tags: ['减脂', '心血管'],
+                    color: 'var(--gradient-3)'
+                });
+            }
+            
+            // 基于体脂
+            if (bfp > (userData.gender === 'male' ? 20 : 30)) {
+                recommendations.push({
+                    icon: '🏋️',
+                    title: '抗阻训练',
+                    desc: '每周2-3次力量训练，重点复合动作（深蹲、硬拉、卧推）。增加瘦体重可提高基础代谢5-10%。',
+                    tags: ['增肌', '代谢'],
+                    color: 'var(--gradient-1)'
+                });
+            }
+            
+            // 基于目标
+            if (goal === 'lose') {
+                recommendations.push({
+                    icon: '🥗',
+                    title: '热量赤字饮食',
+                    desc: `建议每日摄入 ${Math.round(tdee - 500)} kcal，创造500kcal赤字。蛋白质摄入 ${Math.round(userData.weight * 1.6)}g，防止肌肉流失。`,
+                    tags: ['蛋白质', '膳食纤维'],
+                    color: 'var(--gradient-4)'
+                });
+            } else if (goal === 'gain') {
+                recommendations.push({
+                    icon: '🥩',
+                    title: '热量盈余策略',
+                    desc: `每日 ${Math.round(tdee + 300)} kcal，蛋白质 ${Math.round(userData.weight * 2)}g。训练后30分钟内补充碳水+蛋白质（3:1或4:1）。`,
+                    tags: ['蛋白质', '碳水'],
+                    color: 'var(--gradient-2)'
+                });
+            }
+            
+            // 通用建议
+            recommendations.push({
+                icon: '💧',
+                title: '水合状态管理',
+                desc: `每日饮水 ${Math.round(userData.weight * 35)}ml。运动时每15分钟补充150-200ml含电解质饮料。`,
+                tags: ['水', '电解质'],
+                color: 'linear-gradient(135deg, #0ea5e9, #06b6d4)'
+            });
+            
+            recommendations.push({
+                icon: '😴',
+                title: '睡眠优化',
+                desc: '保证7-9小时睡眠。深度睡眠期间生长激素分泌达峰值，促进组织修复。避免睡前蓝光暴露。',
+                tags: ['褪黑素', '生长激素'],
+                color: 'linear-gradient(135deg, #8b5cf6, #a855f7)'
+            });
+            
+            // 渲染
+            container.innerHTML = recommendations.map(rec => `
+                <div class="rec-card" onclick="showRecDetail('${rec.title}')">
+                    <div class="rec-image" style="background: ${rec.color};">${rec.icon}</div>
+                    <div class="rec-content">
+                        <div class="rec-title">${rec.title}</div>
+                        <div class="rec-desc">${rec.desc}</div>
+                        <div class="rec-tags">
+                            ${rec.tags.map(tag => `<span class="rec-tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-// 初始化
-initGame();
-</script>
+        // 名言轮播
+        function startQuoteRotation() {
+            let index = 0;
+            const container = document.getElementById('quoteCarousel');
+            
+            setInterval(() => {
+                index = (index + 1) % quotes.length;
+                const quote = quotes[index];
+                container.innerHTML = `
+                    <div class="quote-slide">
+                        <div class="quote-text">"${quote.text}"</div>
+                        <div class="quote-author">—— ${quote.author}</div>
+                    </div>
+                `;
+            }, 8000);
+        }
+
+        // 详情弹窗
+        function showOrganDetail(organ) {
+            const detail = organDetails[organ];
+            if (!detail) return;
+            
+            document.getElementById('modalBody').innerHTML = detail.content;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function showElementDetail(el) {
+            document.getElementById('modalBody').innerHTML = `
+                <h2 style="color: var(--primary); margin-bottom: 1rem;">${el.symbol} - ${el.name}</h2>
+                <p style="font-size: 1.1rem; margin-bottom: 1rem;"><strong>原子量：</strong>${el.mass} g/mol</p>
+                <p style="margin-bottom: 1rem;"><strong>生物功能：</strong>${el.func}</p>
+                <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.5rem;">
+                    <h4 style="margin-bottom: 0.5rem;">食物来源：</h4>
+                    <p style="font-size: 0.9rem; color: var(--text-light);">
+                        ${getElementSources(el.symbol)}
+                    </p>
+                </div>
+            `;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function getElementSources(symbol) {
+            const sources = {
+                'Fe': '红肉、动物肝脏、菠菜、扁豆',
+                'Zn': '牡蛎、牛肉、南瓜籽、腰果',
+                'Ca': '乳制品、豆腐、深绿叶蔬菜、杏仁',
+                'Mg': '黑巧克力、牛油果、坚果、全谷物',
+                'Se': '巴西坚果、海鲜、鸡蛋、蘑菇',
+                'I': '海带、紫菜、鱼类、碘盐'
+            };
+            return sources[symbol] || '广泛存在于各类食物中';
+        }
+
+        function showRecDetail(title) {
+            showToast(`已保存 "${title}" 到您的健康计划 📌`);
+        }
+
+        function closeModal(e) {
+            if (e.target === document.getElementById('modal')) {
+                document.getElementById('modal').classList.remove('active');
+            }
+        }
+
+        // 隐私模式
+        function togglePrivacy() {
+            isPrivacyMode = !isPrivacyMode;
+            document.getElementById('privacyToggle').classList.toggle('active', isPrivacyMode);
+            
+            if (isPrivacyMode) {
+                showToast('🔒 隐私模式已开启 - 数据仅保存在本地');
+                document.body.style.filter = 'grayscale(0.2)';
+            } else {
+                showToast('🔓 隐私模式已关闭');
+                document.body.style.filter = '';
+            }
+        }
+
+        // 彩蛋系统
+        function checkEasterEggs(bmi, weight, height) {
+            const egg = document.getElementById('easterEgg');
+            
+            if (weight && height && !egg.classList.contains('visible')) {
+                setTimeout(() => egg.classList.add('visible'), 2000);
+            }
+            
+            if (Math.abs(bmi - 42) < 0.5) {
+                showToast('🌌 生命、宇宙以及任何事情的终极答案！');
+                document.body.style.animation = 'gradientBG 0.5s linear infinite';
+                setTimeout(() => {
+                    document.body.style.animation = 'gradientBG 15s ease infinite';
+                }, 3000);
+            }
+            
+            if (height / weight > 2.4 && height / weight < 2.6) {
+                showToast('✨ 黄金比例身材！φ = 1.618...');
+                createConfetti();
+            }
+        }
+
+        function triggerEasterEgg() {
+            const facts = [
+                "🧬 DNA每分钟旋转3000次，每秒复制1000个碱基对！",
+                "⚡ 线粒体每年产生约10²⁰个ATP分子，总重量超过你的体重！",
+                "🧠 大脑每天产生7万个想法，神经元连接长度达16万公里！",
+                "❤️ 心脏一生泵血1.8亿升，足够装满3个奥运会游泳池！",
+                "💪 骨骼肌共60亿条肌纤维，同时收缩可产生25吨力量！",
+                "🦴 骨骼每10年完全更新，破骨细胞和成骨细胞持续重塑！",
+                "🫁 肺泡表面积70-100㎡，相当于一个网球场！",
+                "🧪 胃酸pH 1.5-3.5，可溶解金属（但胃黏液保护胃壁）！"
+            ];
+            
+            showToast(facts[Math.floor(Math.random() * facts.length)]);
+            createConfetti();
+        }
+
+        function createConfetti() {
+            const colors = ['#10b981', '#0ea5e9', '#f59e0b', '#ec4899', '#8b5cf6'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = '50%';
+                confetti.style.top = '50%';
+                confetti.style.borderRadius = '50%';
+                confetti.style.zIndex = '9999';
+                confetti.style.pointerEvents = 'none';
+                document.body.appendChild(confetti);
+                
+                const angle = (Math.PI * 2 * i) / 50;
+                const velocity = 200 + Math.random() * 200;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                
+                confetti.animate([
+                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 1000 + Math.random() * 500,
+                    easing: 'cubic-bezier(0, .9, .57, 1)'
+                }).onfinish = () => confetti.remove();
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #1f2937;
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 1rem;
+                font-weight: 600;
+                z-index: 9999;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                animation: slide-up 0.3s ease-out;
+                max-width: 90%;
+                text-align: center;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // 响应式重绘
+        window.addEventListener('resize', () => {
+            if (currentTab === 'overview') {
+                setTimeout(initCharts, 100);
+            }
+        });
+    </script>
 </body>
 </html>
