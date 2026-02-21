@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>俄罗斯方块</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#8b5cf6',
+        secondary: '#ec4899',
+        accent: '#06b6d4',
+        dark: '#0f0a1e',
+        card: 'rgba(255, 255, 255, 0.08)'
+      }
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+body { 
+  font-family: 'Noto Sans SC', sans-serif;
+  overflow: hidden;
+  touch-action: none;
+  background: #0a0612;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-strong {
+  background: rgba(30, 20, 50, 0.8);
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes lineFlash {
+  0% { filter: brightness(1); }
+  30% { filter: brightness(3); background: #fff !important; }
+  100% { filter: brightness(1); opacity: 0; transform: scaleY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes scorePopup {
+  0% { transform: scale(0.5) translateY(0); opacity: 1; }
+  100% { transform: scale(1.2) translateY(-50px); opacity: 0; }
+}
+
+@keyframes rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+.floating { animation: float 6s ease-in-out infinite; }
+.pulse { animation: pulse 3s ease-in-out infinite; }
+.slide-in { animation: slideIn 0.5s ease-out forwards; }
+.shake { animation: shake 0.4s ease-out; }
+
+.cell {
+  border-radius: 3px;
+  transition: all 0.05s;
+}
+
+.cell-I { background: linear-gradient(135deg, #22d3ee, #0891b2); box-shadow: 0 0 12px rgba(34, 211, 238, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+.cell-O { background: linear-gradient(135deg, #facc15, #ca8a04); box-shadow: 0 0 12px rgba(250, 204, 21, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+.cell-T { background: linear-gradient(135deg, #a855f7, #7c3aed); box-shadow: 0 0 12px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+.cell-S { background: linear-gradient(135deg, #4ade80, #16a34a); box-shadow: 0 0 12px rgba(74, 222, 128, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+.cell-Z { background: linear-gradient(135deg, #f472b6, #db2777); box-shadow: 0 0 12px rgba(244, 114, 182, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+.cell-J { background: linear-gradient(135deg, #60a5fa, #2563eb); box-shadow: 0 0 12px rgba(96, 165, 250, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+.cell-L { background: linear-gradient(135deg, #fb923c, #ea580c); box-shadow: 0 0 12px rgba(251, 146, 60, 0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
+.cell-obstacle { 
+  background: linear-gradient(135deg, #374151, #1f2937); 
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.ghost-cell {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 2px dashed rgba(255, 255, 255, 0.25) !important;
+  box-shadow: none !important;
+}
+
+.line-clear {
+  animation: lineFlash 0.35s ease-out forwards;
+}
+
+.score-popup {
+  position: absolute;
+  font-weight: 900;
+  font-size: 24px;
+  color: #fbbf24;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
+  animation: scorePopup 0.8s ease-out forwards;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.btn {
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.ctrl-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.1s;
+  cursor: pointer;
+}
+
+.ctrl-btn:active {
+  transform: scale(0.85);
+  background: rgba(255,255,255,0.2);
+}
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+}
+
+.screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.95);
+}
+
+.mode-card {
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.mode-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.rank-item {
+  transition: all 0.2s;
+}
+
+.rank-item:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+</style>
+</head>
+<body class="min-h-screen relative text-white">
+
+<!-- 背景装饰 -->
+<div class="fixed inset-0 overflow-hidden pointer-events-none">
+  <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl floating"></div>
+  <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-pink-600/20 rounded-full blur-3xl floating" style="animation-delay:-2s"></div>
+  <div class="absolute top-1/2 left-1/2 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pulse"></div>
+</div>
+
+<!-- ========== 开始界面 ========== -->
+<div id="startScreen" class="screen z-30 p-4">
+  <div class="text-center max-w-lg mx-auto">
+    <div class="mb-8 slide-in">
+      <h1 class="text-5xl md:text-6xl font-black mb-3 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+        俄罗斯方块
+      </h1>
+      <p class="text-white/40 text-lg">经典益智游戏 · 挑战你的极限</p>
+    </div>
+    
+    <div class="glass-strong rounded-3xl p-6 mb-6 slide-in" style="animation-delay:0.1s">
+      <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+        <div class="p-3">
+          <div class="text-3xl mb-1">🎮</div>
+          <div class="text-white/50 text-sm">多种模式</div>
+        </div>
+        <div class="p-3">
+          <div class="text-3xl mb-1">🏆</div>
+          <div class="text-white/50 text-sm">排行榜</div>
+        </div>
+        <div class="p-3">
+          <div class="text-3xl mb-1">⚡</div>
+          <div class="text-white/50 text-sm">流畅操作</div>
+        </div>
+      </div>
+      
+      <button id="startBtn" class="btn w-full bg-gradient-to-r from-purple-500 to-pink-500 py-4 rounded-2xl font-bold text-lg shadow-lg shadow-purple-500/30">
+        <i class="fas fa-play mr-2"></i>开始游戏
+      </button>
+    </div>
+    
+    <div class="text-white/20 text-xs slide-in" style="animation-delay:0.2s">
+      适合全年龄段 · 简单易上手
+    </div>
+  </div>
+</div>
+
+<!-- ========== 模式选择界面 ========== -->
+<div id="modeScreen" class="screen z-30 p-4 hidden">
+  <div class="w-full max-w-2xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <button id="backToStart" class="btn glass px-4 py-2 rounded-xl text-white/70 text-sm">
+        <i class="fas fa-arrow-left mr-2"></i>返回
+      </button>
+      <h2 class="text-2xl font-bold">选择模式</h2>
+      <div class="w-20"></div>
+    </div>
+    
+    <div class="grid gap-4 mb-6">
+      <!-- 简单模式 -->
+      <div class="mode-card glass-strong rounded-2xl p-5 slide-in" style="animation-delay:0.05s" data-mode="easy">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-2xl shadow-lg">
+            <i class="fas fa-seedling"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-bold">简单模式</h3>
+            <p class="text-white/50 text-sm">适合新手，速度较慢</p>
+          </div>
+          <div class="text-right text-sm">
+            <div class="text-white/40">10×20 格</div>
+            <div class="text-green-400">慢速</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 困难模式 -->
+      <div class="mode-card glass-strong rounded-2xl p-5 slide-in" style="animation-delay:0.1s" data-mode="hard">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-2xl shadow-lg">
+            <i class="fas fa-fire"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-bold">困难模式</h3>
+            <p class="text-white/50 text-sm">有障碍物，速度更快</p>
+          </div>
+          <div class="text-right text-sm">
+            <div class="text-white/40">12×24 格</div>
+            <div class="text-orange-400">快速</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 无限模式 -->
+      <div class="mode-card glass-strong rounded-2xl p-5 slide-in" style="animation-delay:0.15s" data-mode="endless">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-2xl shadow-lg">
+            <i class="fas fa-infinity"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-bold">无限模式</h3>
+            <p class="text-white/50 text-sm">速度不断加快，挑战极限</p>
+          </div>
+          <div class="text-right text-sm">
+            <div class="text-white/40">10×20 格</div>
+            <div class="text-purple-400">递增</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 操作说明 -->
+    <div class="glass rounded-2xl p-4 slide-in" style="animation-delay:0.2s">
+      <h4 class="font-medium mb-3 text-white/70"><i class="fas fa-gamepad mr-2"></i>操作说明</h4>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+        <div class="text-center p-2 glass rounded-xl">
+          <div class="text-white/80 mb-1">← →</div>
+          <div class="text-white/40 text-xs">左右移动</div>
+        </div>
+        <div class="text-center p-2 glass rounded-xl">
+          <div class="text-white/80 mb-1">↑</div>
+          <div class="text-white/40 text-xs">旋转方块</div>
+        </div>
+        <div class="text-center p-2 glass rounded-xl">
+          <div class="text-white/80 mb-1">↓</div>
+          <div class="text-white/40 text-xs">加速下落</div>
+        </div>
+        <div class="text-center p-2 glass rounded-xl">
+          <div class="text-white/80 mb-1">空格</div>
+          <div class="text-white/40 text-xs">直接落地</div>
+        </div>
+      </div>
+      <p class="text-white/30 text-xs mt-3 text-center">手机用户可点击屏幕按钮或滑动操作</p>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 游戏界面 ========== -->
+<div id="gameScreen" class="screen z-20 hidden">
+  <div class="w-full h-full flex flex-col lg:flex-row gap-3 p-3 max-w-5xl mx-auto">
+    
+    <!-- 左侧信息 -->
+    <div class="glass-strong rounded-2xl p-4 w-full lg:w-52 flex lg:flex-col gap-3 order-2 lg:order-1">
+      <div class="flex-1 lg:flex-none">
+        <div class="text-white/40 text-xs mb-1">下一个</div>
+        <div class="glass rounded-xl p-2 flex items-center justify-center h-16 lg:h-20">
+          <div id="nextPiece" class="grid gap-px"></div>
+        </div>
+      </div>
+      <div class="flex-1 lg:flex-none">
+        <div class="text-white/40 text-xs mb-1">保存 (C键)</div>
+        <div class="glass rounded-xl p-2 flex items-center justify-center h-16 lg:h-20">
+          <div id="holdPiece" class="grid gap-px"></div>
+        </div>
+      </div>
+      <div class="flex-1 lg:flex-none grid grid-cols-2 lg:grid-cols-1 gap-2">
+        <div class="glass rounded-xl p-2">
+          <div class="text-white/40 text-xs">分数</div>
+          <div id="score" class="text-lg font-bold text-amber-400">0</div>
+        </div>
+        <div class="glass rounded-xl p-2">
+          <div class="text-white/40 text-xs">时间</div>
+          <div id="timer" class="text-lg font-bold text-cyan-400">00:00</div>
+        </div>
+        <div class="glass rounded-xl p-2">
+          <div class="text-white/40 text-xs">等级</div>
+          <div id="level" class="text-lg font-bold text-purple-400">1</div>
+        </div>
+        <div class="glass rounded-xl p-2">
+          <div class="text-white/40 text-xs">消行</div>
+          <div id="lines" class="text-lg font-bold">0</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 中间游戏区 -->
+    <div class="flex-1 flex flex-col items-center order-1 lg:order-2">
+      <div class="w-full flex items-center justify-between mb-3 px-1">
+        <button id="backToMode" class="btn glass px-3 py-1.5 rounded-lg text-white/60 text-sm">
+          <i class="fas fa-arrow-left mr-1"></i>返回
+        </button>
+        <div id="modeLabel" class="glass px-3 py-1.5 rounded-lg text-sm font-medium">简单模式</div>
+        <button id="exitGame" class="btn glass px-3 py-1.5 rounded-lg text-red-400/70 text-sm">
+          <i class="fas fa-times mr-1"></i>退出
+        </button>
+      </div>
+      
+      <div class="glass-strong rounded-2xl p-2 lg:p-3 relative">
+        <div id="gameBoard" class="grid gap-px"></div>
+        <div id="particleLayer" class="absolute inset-0 pointer-events-none overflow-hidden rounded-xl"></div>
+      </div>
+      
+      <div class="flex gap-2 mt-3">
+        <button id="playBtn" class="btn bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-2 rounded-xl font-medium text-sm">
+          <i class="fas fa-play mr-1"></i>开始
+        </button>
+        <button id="pauseBtn" class="btn glass px-5 py-2 rounded-xl text-sm" disabled>
+          <i class="fas fa-pause mr-1"></i>暂停
+        </button>
+        <button id="restartBtn" class="btn glass px-5 py-2 rounded-xl text-sm">
+          <i class="fas fa-redo mr-1"></i>重玩
+        </button>
+      </div>
+      
+      <div id="gameHint" class="text-white/40 text-xs mt-2">点击「开始」按钮开始游戏</div>
+    </div>
+    
+    <!-- 右侧控制 -->
+    <div class="glass-strong rounded-2xl p-4 w-full lg:w-52 order-3">
+      <div class="flex flex-col items-center gap-2">
+        <button id="rotateCtrl" class="ctrl-btn glass text-white"><i class="fas fa-sync-alt"></i></button>
+        <div class="flex gap-2">
+          <button id="leftCtrl" class="ctrl-btn glass text-white"><i class="fas fa-chevron-left"></i></button>
+          <button id="downCtrl" class="ctrl-btn glass text-white"><i class="fas fa-chevron-down"></i></button>
+          <button id="rightCtrl" class="ctrl-btn glass text-white"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div class="flex gap-2">
+          <button id="holdCtrl" class="ctrl-btn glass text-white text-base"><i class="fas fa-box"></i></button>
+          <button id="dropCtrl" class="ctrl-btn glass text-white text-base"><i class="fas fa-angle-double-down"></i></button>
+        </div>
+      </div>
+      
+      <div class="mt-4 pt-3 border-t border-white/10">
+        <div class="text-white/40 text-xs mb-2">最高分</div>
+        <div id="highScore" class="text-xl font-bold text-amber-400">0</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 游戏结束弹窗 ========== -->
+<div id="gameOverModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+  <div class="relative glass-strong rounded-3xl p-6 max-w-sm w-full text-center slide-in">
+    <div class="text-5xl mb-3">🎮</div>
+    <h2 class="text-2xl font-bold mb-1">游戏结束</h2>
+    <p id="endMessage" class="text-white/50 text-sm mb-4">再接再厉！</p>
+    
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div class="glass rounded-xl p-3">
+        <div class="text-white/40 text-xs">最终得分</div>
+        <div id="finalScore" class="text-2xl font-bold text-amber-400">0</div>
+      </div>
+      <div class="glass rounded-xl p-3">
+        <div class="text-white/40 text-xs">存活时间</div>
+        <div id="finalTime" class="text-2xl font-bold text-cyan-400">00:00</div>
+      </div>
+    </div>
+    
+    <div id="newRecord" class="hidden bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-xl p-3 mb-4">
+      <i class="fas fa-trophy text-amber-400 mr-2"></i>
+      <span class="text-amber-400 font-bold">打破记录！</span>
+    </div>
+    
+    <div class="flex gap-2">
+      <button id="backToMenuBtn" class="btn flex-1 glass py-3 rounded-xl font-medium">
+        <i class="fas fa-home mr-1"></i>主菜单
+      </button>
+      <button id="playAgainBtn" class="btn flex-1 bg-gradient-to-r from-purple-500 to-pink-500 py-3 rounded-xl font-medium">
+        <i class="fas fa-redo mr-1"></i>再来一局
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 排行榜弹窗 ========== -->
+<div id="rankModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+  <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+  <div class="relative glass-strong rounded-3xl p-6 max-w-md w-full slide-in">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold"><i class="fas fa-trophy text-amber-400 mr-2"></i>排行榜</h2>
+      <button id="closeRank" class="text-white/50 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+    </div>
+    
+    <div class="flex gap-2 mb-4">
+      <button class="rank-tab flex-1 py-2 rounded-lg text-sm font-medium bg-white/10" data-tab="easy">简单</button>
+      <button class="rank-tab flex-1 py-2 rounded-lg text-sm font-medium" data-tab="hard">困难</button>
+      <button class="rank-tab flex-1 py-2 rounded-lg text-sm font-medium" data-tab="endless">无限</button>
+    </div>
+    
+    <div id="rankList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+  </div>
+</div>
+
+<script>
+// ============ 游戏配置 ============
+const CONFIG = {
+  easy: { cols: 10, rows: 20, baseSpeed: 800, speedStep: 50, obstacles: false, label: '简单模式' },
+  hard: { cols: 12, rows: 24, baseSpeed: 500, speedStep: 40, obstacles: true, label: '困难模式' },
+  endless: { cols: 10, rows: 20, baseSpeed: 700, speedStep: 30, obstacles: false, label: '无限模式' }
+};
+
+// 七种标准方块
+const PIECES = {
+  I: { shape: [[1,1,1,1]], color: 'I' },
+  O: { shape: [[1,1],[1,1]], color: 'O' },
+  T: { shape: [[0,1,0],[1,1,1]], color: 'T' },
+  S: { shape: [[0,1,1],[1,1,0]], color: 'S' },
+  Z: { shape: [[1,1,0],[0,1,1]], color: 'Z' },
+  J: { shape: [[1,0,0],[1,1,1]], color: 'J' },
+  L: { shape: [[0,0,1],[1,1,1]], color: 'L' }
+};
+const PIECE_TYPES = Object.keys(PIECES);
+
+// ============ 游戏状态 ============
+let mode = 'easy';
+let cfg = CONFIG.easy;
+let board = [];
+let piece = null;
+let nextPiece = null;
+let holdData = null;
+let canHold = true;
+let score = 0;
+let level = 1;
+let linesCleared = 0;
+let gameTime = 0;
+let isRunning = false;
+let isPaused = false;
+let gameLoop = null;
+let timerLoop = null;
+let cellSize = 24;
+
+// 排行榜数据
+let rankings = {
+  easy: JSON.parse(localStorage.getItem('rank_easy') || '[]'),
+  hard: JSON.parse(localStorage.getItem('rank_hard') || '[]'),
+  endless: JSON.parse(localStorage.getItem('rank_endless') || '[]')
+};
+
+// ============ DOM ============
+const $ = id => document.getElementById(id);
+const screens = { start: $('startScreen'), mode: $('modeScreen'), game: $('gameScreen') };
+const els = {
+  board: $('gameBoard'),
+  next: $('nextPiece'),
+  hold: $('holdPiece'),
+  score: $('score'),
+  timer: $('timer'),
+  level: $('level'),
+  lines: $('lines'),
+  highScore: $('highScore'),
+  modeLabel: $('modeLabel'),
+  hint: $('gameHint'),
+  particles: $('particleLayer'),
+  playBtn: $('playBtn'),
+  pauseBtn: $('pauseBtn'),
+  restartBtn: $('restartBtn'),
+  gameOverModal: $('gameOverModal'),
+  finalScore: $('finalScore'),
+  finalTime: $('finalTime'),
+  endMessage: $('endMessage'),
+  newRecord: $('newRecord'),
+  rankModal: $('rankModal'),
+  rankList: $('rankList')
+};
+
+// ============ 界面切换 ============
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.add('hidden'));
+  screens[name].classList.remove('hidden');
+}
+
+$('startBtn').onclick = () => showScreen('mode');
+$('backToStart').onclick = () => showScreen('start');
+$('backToMode').onclick = () => { stopGame(); showScreen('mode'); };
+$('exitGame').onclick = () => { stopGame(); showScreen('start'); };
+$('backToMenuBtn').onclick = () => { els.gameOverModal.classList.add('hidden'); showScreen('mode'); };
+$('closeRank').onclick = () => els.rankModal.classList.add('hidden');
+
+// 模式选择
+document.querySelectorAll('.mode-card').forEach(card => {
+  card.onclick = () => {
+    mode = card.dataset.mode;
+    cfg = CONFIG[mode];
+    els.modeLabel.textContent = cfg.label;
+    initGame();
+    showScreen('game');
+  };
+});
+
+// ============ 游戏初始化 ============
+function initGame() {
+  // 计算格子大小
+  const maxW = Math.min(window.innerWidth - 280, 450);
+  cellSize = Math.max(14, Math.min(24, Math.floor(maxW / cfg.cols) - 1));
+  
+  // 初始化棋盘
+  board = Array(cfg.rows).fill(null).map(() => Array(cfg.cols).fill(0));
+  
+  // 困难模式添加障碍物
+  if (cfg.obstacles) addObstacles();
+  
+  // 渲染棋盘
+  renderBoard();
+  
+  // 重置状态
+  score = 0;
+  level = 1;
+  linesCleared = 0;
+  gameTime = 0;
+  piece = null;
+  nextPiece = null;
+  holdData = null;
+  canHold = true;
+  isRunning = false;
+  isPaused = false;
+  
+  // 更新UI
+  updateStats();
+  renderPreview(els.next, null);
+  renderPreview(els.hold, null);
+  
+  // 更新最高分显示
+  const top = rankings[mode][0];
+  els.highScore.textContent = top ? top.score : 0;
+  
+  els.playBtn.innerHTML = '<i class="fas fa-play mr-1"></i>开始';
+  els.playBtn.disabled = false;
+  els.pauseBtn.disabled = true;
+  els.hint.textContent = '点击「开始」按钮开始游戏';
+}
+
+function addObstacles() {
+  // 在底部15%区域随机放置障碍物
+  const startRow = Math.floor(cfg.rows * 0.85);
+  for (let r = startRow; r < cfg.rows; r++) {
+    const numBlocks = Math.floor(cfg.cols * 0.3);
+    const positions = [];
+    while (positions.length < numBlocks) {
+      const c = Math.floor(Math.random() * cfg.cols);
+      if (!positions.includes(c)) positions.push(c);
+    }
+    positions.forEach(c => { board[r][c] = 'obstacle'; });
+  }
+}
+
+function renderBoard() {
+  els.board.innerHTML = '';
+  els.board.style.gridTemplateColumns = `repeat(${cfg.cols}, ${cellSize}px)`;
+  els.board.style.width = `${cfg.cols * (cellSize + 1)}px`;
+  
+  for (let r = 0; r < cfg.rows; r++) {
+    for (let c = 0; c < cfg.cols; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.style.width = cell.style.height = `${cellSize}px`;
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      
+      if (board[r][c] === 'obstacle') {
+        cell.classList.add('cell-obstacle');
+      } else {
+        cell.style.background = 'rgba(255,255,255,0.02)';
+      }
+      
+      els.board.appendChild(cell);
+    }
+  }
+}
+
+// ============ 方块逻辑 ============
+function createPiece(type) {
+  const p = PIECES[type];
+  return {
+    type,
+    shape: p.shape.map(row => [...row]),
+    color: p.color,
+    x: Math.floor(cfg.cols / 2) - Math.ceil(p.shape[0].length / 2),
+    y: 0
+  };
+}
+
+function randomPiece() {
+  return createPiece(PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)]);
+}
+
+function spawnPiece() {
+  piece = nextPiece || randomPiece();
+  nextPiece = randomPiece();
+  canHold = true;
+  
+  renderPreview(els.next, nextPiece);
+  
+  // 检查游戏结束
+  if (!canMove(piece.x, piece.y, piece.shape)) {
+    endGame();
+  }
+}
+
+function renderPreview(el, p) {
+  el.innerHTML = '';
+  if (!p) return;
+  
+  const size = 14;
+  el.style.gridTemplateColumns = `repeat(${p.shape[0].length}, ${size}px)`;
+  
+  p.shape.forEach(row => {
+    row.forEach(v => {
+      const cell = document.createElement('div');
+      cell.style.width = cell.style.height = `${size}px`;
+      cell.style.borderRadius = '2px';
+      cell.className = v ? `cell-${p.color}` : '';
+      el.appendChild(cell);
+    });
+  });
+}
+
+function canMove(x, y, shape) {
+  return shape.every((row, r) =>
+    row.every((v, c) => {
+      if (!v) return true;
+      const bx = x + c, by = y + r;
+      return bx >= 0 && bx < cfg.cols && by < cfg.rows && (by < 0 || !board[by][bx]);
+    })
+  );
+}
+
+function rotate() {
+  if (!piece || !isRunning || isPaused) return;
+  
+  const rotated = piece.shape[0].map((_, i) => piece.shape.map(row => row[i]).reverse());
+  const kicks = [0, -1, 1, -2, 2];
+  
+  for (const k of kicks) {
+    if (canMove(piece.x + k, piece.y, rotated)) {
+      piece.shape = rotated;
+      piece.x += k;
+      draw();
+      return;
+    }
+  }
+}
+
+function move(dx, dy) {
+  if (!piece || !isRunning || isPaused) return false;
+  
+  if (canMove(piece.x + dx, piece.y + dy, piece.shape)) {
+    piece.x += dx;
+    piece.y += dy;
+    draw();
+    return true;
+  } else if (dy > 0) {
+    lock();
+  }
+  return false;
+}
+
+function drop() {
+  if (!piece || !isRunning || isPaused) return;
+  
+  let dist = 0;
+  while (canMove(piece.x, piece.y + 1, piece.shape)) {
+    piece.y++;
+    dist++;
+  }
+  score += dist * 2;
+  updateStats();
+  lock();
+}
+
+function hold() {
+  if (!canHold || !isRunning || isPaused || !piece) return;
+  
+  canHold = false;
+  const type = piece.type;
+  
+  if (holdData) {
+    piece = createPiece(holdData);
+    holdData = type;
+  } else {
+    holdData = type;
+    spawnPiece();
+  }
+  
+  renderPreview(els.hold, createPiece(holdData));
+  draw();
+}
+
+function lock() {
+  // 将方块固定到棋盘
+  piece.shape.forEach((row, r) => {
+    row.forEach((v, c) => {
+      if (v) {
+        const by = piece.y + r, bx = piece.x + c;
+        if (by >= 0 && by < cfg.rows) {
+          board[by][bx] = piece.color;
+        }
+      }
+    });
+  });
+  
+  // 检查消行
+  checkLines();
+  
+  // 生成新方块
+  spawnPiece();
+  draw();
+}
+
+function checkLines() {
+  const toClear = [];
+  
+  // 找出所有满行
+  for (let r = 0; r < cfg.rows; r++) {
+    let full = true;
+    for (let c = 0; c < cfg.cols; c++) {
+      if (!board[r][c] || board[r][c] === 'obstacle') {
+        full = false;
+        break;
+      }
+    }
+    if (full) toClear.push(r);
+  }
+  
+  if (toClear.length === 0) return;
+  
+  // 消行动画
+  const cells = els.board.children;
+  toClear.forEach(r => {
+    for (let c = 0; c < cfg.cols; c++) {
+      const idx = r * cfg.cols + c;
+      cells[idx].classList.add('line-clear');
+      spawnParticles(cells[idx]);
+    }
+  });
+  
+  // 震动效果
+  els.board.parentElement.classList.add('shake');
+  setTimeout(() => els.board.parentElement.classList.remove('shake'), 400);
+  
+  // 分数弹出
+  showScorePopup(toClear.length);
+  
+  setTimeout(() => {
+    // 从下往上移除满行
+    toClear.sort((a, b) => b - a).forEach(r => {
+      board.splice(r, 1);
+      board.unshift(Array(cfg.cols).fill(0));
+    });
+    
+    // 计分：1行100分，2行300分，3行500分，4行800分
+    const points = [0, 100, 300, 500, 800];
+    score += points[Math.min(toClear.length, 4)] * level;
+    linesCleared += toClear.length;
+    
+    // 升级：每10行升一级
+    const newLevel = Math.floor(linesCleared / 10) + 1;
+    if (newLevel > level) {
+      level = newLevel;
+      // 无限模式速度持续加快
+      if (mode === 'endless') {
+        restartLoop();
+      }
+    }
+    
+    // 普通模式每升一级加速
+    if (mode !== 'endless' && newLevel > level) {
+      restartLoop();
+    }
+    
+    updateStats();
+    draw();
+  }, 350);
+}
+
+function spawnParticles(cell) {
+  const rect = cell.getBoundingClientRect();
+  const containerRect = els.particles.getBoundingClientRect();
+  
+  for (let i = 0; i < 5; i++) {
+    const p = document.createElement('div');
+    p.className = 'absolute w-2 h-2 rounded-full';
+    p.style.left = `${rect.left - containerRect.left + Math.random() * rect.width}px`;
+    p.style.top = `${rect.top - containerRect.top}px`;
+    p.style.background = `hsl(${Math.random() * 60 + 30}, 100%, 60%)`;
+    p.style.animation = 'scorePopup 0.6s ease-out forwards';
+    els.particles.appendChild(p);
+    setTimeout(() => p.remove(), 600);
+  }
+}
+
+function showScorePopup(numLines) {
+  const texts = ['', '+100', '+300', '+500', '+800'];
+  const popup = document.createElement('div');
+  popup.className = 'score-popup';
+  popup.textContent = texts[Math.min(numLines, 4)];
+  popup.style.left = '50%';
+  popup.style.top = '40%';
+  popup.style.transform = 'translateX(-50%)';
+  els.particles.appendChild(popup);
+  setTimeout(() => popup.remove(), 800);
+}
+
+function draw() {
+  const cells = els.board.children;
+  
+  // 重绘棋盘
+  for (let r = 0; r < cfg.rows; r++) {
+    for (let c = 0; c < cfg.cols; c++) {
+      const cell = cells[r * cfg.cols + c];
+      cell.className = 'cell';
+      
+      if (board[r][c] === 'obstacle') {
+        cell.classList.add('cell-obstacle');
+      } else if (board[r][c]) {
+        cell.classList.add(`cell-${board[r][c]}`);
+      } else {
+        cell.style.background = 'rgba(255,255,255,0.02)';
+      }
+    }
+  }
+  
+  if (!piece) return;
+  
+  // 绘制幽灵方块
+  let ghostY = piece.y;
+  while (canMove(piece.x, ghostY + 1, piece.shape)) ghostY++;
+  
+  piece.shape.forEach((row, r) => {
+    row.forEach((v, c) => {
+      if (v) {
+        const by = ghostY + r, bx = piece.x + c;
+        if (by >= 0 && by < cfg.rows && bx >= 0 && bx < cfg.cols) {
+          const cell = cells[by * cfg.cols + bx];
+          if (!board[by][bx]) cell.classList.add('ghost-cell');
+        }
+      }
+    });
+  });
+  
+  // 绘制当前方块
+  piece.shape.forEach((row, r) => {
+    row.forEach((v, c) => {
+      if (v) {
+        const by = piece.y + r, bx = piece.x + c;
+        if (by >= 0 && by < cfg.rows && bx >= 0 && bx < cfg.cols) {
+          const cell = cells[by * cfg.cols + bx];
+          cell.className = `cell cell-${piece.color}`;
+        }
+      }
+    });
+  });
+}
+
+// ============ 游戏控制 ============
+function startGame() {
+  if (isRunning && !isPaused) return;
+  
+  if (!isRunning) {
+    initGame();
+    spawnPiece();
+  }
+  
+  isRunning = true;
+  isPaused = false;
+  
+  // 开始计时
+  timerLoop = setInterval(() => {
+    gameTime++;
+    els.timer.textContent = formatTime(gameTime);
+  }, 1000);
+  
+  // 开始游戏循环
+  restartLoop();
+  
+  els.playBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>进行中';
+  els.playBtn.disabled = true;
+  els.pauseBtn.disabled = false;
+  els.hint.textContent = '游戏进行中...';
+  
+  draw();
+}
+
+function pauseGame() {
+  if (!isRunning) return;
+  
+  isPaused = !isPaused;
+  
+  if (isPaused) {
+    clearInterval(gameLoop);
+    clearInterval(timerLoop);
+    els.pauseBtn.innerHTML = '<i class="fas fa-play mr-1"></i>继续';
+    els.hint.textContent = '游戏已暂停';
+  } else {
+    timerLoop = setInterval(() => {
+      gameTime++;
+      els.timer.textContent = formatTime(gameTime);
+    }, 1000);
+    restartLoop();
+    els.pauseBtn.innerHTML = '<i class="fas fa-pause mr-1"></i>暂停';
+    els.hint.textContent = '游戏进行中...';
+  }
+}
+
+function stopGame() {
+  isRunning = false;
+  isPaused = false;
+  clearInterval(gameLoop);
+  clearInterval(timerLoop);
+}
+
+function restartLoop() {
+  clearInterval(gameLoop);
+  // 无限模式：速度随时间递增
+  let speed = cfg.baseSpeed - (level - 1) * cfg.speedStep;
+  if (mode === 'endless') {
+    speed = Math.max(50, cfg.baseSpeed - gameTime * 2);
+  }
+  speed = Math.max(50, speed);
+  gameLoop = setInterval(() => move(0, 1), speed);
+}
+
+function endGame() {
+  stopGame();
+  
+  // 保存分数
+  const record = { score, time: gameTime, lines: linesCleared, date: new Date().toLocaleDateString() };
+  rankings[mode].push(record);
+  rankings[mode].sort((a, b) => b.score - a.score);
+  rankings[mode] = rankings[mode].slice(0, 10);
+  localStorage.setItem(`rank_${mode}`, JSON.stringify(rankings[mode]));
+  
+  // 检查是否破纪录
+  const isNewRecord = rankings[mode][0].score === score && rankings[mode].length > 1;
+  
+  els.finalScore.textContent = score.toLocaleString();
+  els.finalTime.textContent = formatTime(gameTime);
+  els.endMessage.textContent = mode === 'endless' ? `你坚持了 ${formatTime(gameTime)}！` : '再接再厉！';
+  
+  if (isNewRecord) {
+    els.newRecord.classList.remove('hidden');
+  } else {
+    els.newRecord.classList.add('hidden');
+  }
+  
+  els.gameOverModal.classList.remove('hidden');
+  
+  els.playBtn.innerHTML = '<i class="fas fa-play mr-1"></i>开始';
+  els.playBtn.disabled = false;
+  els.pauseBtn.disabled = true;
+  els.hint.textContent = '游戏结束';
+}
+
+function updateStats() {
+  els.score.textContent = score.toLocaleString();
+  els.level.textContent = level;
+  els.lines.textContent = linesCleared;
+}
+
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+}
+
+// ============ 排行榜 ============
+function showRanking(tab) {
+  document.querySelectorAll('.rank-tab').forEach(t => {
+    t.classList.toggle('bg-white/10', t.dataset.tab === tab);
+  });
+  
+  const list = rankings[tab];
+  els.rankList.innerHTML = list.length === 0 
+    ? '<div class="text-center text-white/40 py-8">暂无记录</div>'
+    : list.map((r, i) => `
+      <div class="rank-item flex items-center gap-3 p-3 rounded-xl ${i === 0 ? 'bg-amber-500/10' : ''}">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold ${i === 0 ? 'bg-amber-500 text-black' : i === 1 ? 'bg-gray-400 text-black' : i === 2 ? 'bg-amber-700 text-white' : 'bg-white/10'}">${i + 1}</div>
+        <div class="flex-1">
+          <div class="font-bold">${r.score.toLocaleString()} 分</div>
+          <div class="text-white/40 text-xs">${r.date}</div>
+        </div>
+        <div class="text-right text-sm">
+          <div class="text-cyan-400">${formatTime(r.time)}</div>
+          <div class="text-white/40 text-xs">${r.lines} 行</div>
+        </div>
+      </div>
+    `).join('');
+}
+
+document.querySelectorAll('.rank-tab').forEach(tab => {
+  tab.onclick = () => showRanking(tab.dataset.tab);
+});
+
+// ============ 输入处理 ============
+document.addEventListener('keydown', e => {
+  if (screens.game.classList.contains('hidden')) return;
+  
+  switch (e.key) {
+    case 'ArrowLeft': e.preventDefault(); move(-1, 0); break;
+    case 'ArrowRight': e.preventDefault(); move(1, 0); break;
+    case 'ArrowDown': e.preventDefault(); if (move(0, 1)) { score += 1; updateStats(); } break;
+    case 'ArrowUp': e.preventDefault(); rotate(); break;
+    case ' ': e.preventDefault(); drop(); break;
+    case 'c': case 'C': hold(); break;
+    case 'p': case 'P': if (isRunning) pauseGame(); break;
+    case 'Escape': if (isRunning) pauseGame(); break;
+  }
+});
+
+// 鼠标点击
+els.board.addEventListener('click', e => {
+  if (!isRunning || isPaused || !piece) return;
+  const rect = els.board.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  if (x < rect.width / 3) move(-1, 0);
+  else if (x > rect.width * 2 / 3) move(1, 0);
+  else rotate();
+});
+
+// 触摸滑动
+let touchX = 0, touchY = 0, lastTap = 0;
+els.board.addEventListener('touchstart', e => {
+  touchX = e.touches[0].clientX;
+  touchY = e.touches[0].clientY;
+}, { passive: true });
+
+els.board.addEventListener('touchend', e => {
+  if (!isRunning || isPaused) return;
+  
+  const dx = e.changedTouches[0].clientX - touchX;
+  const dy = e.changedTouches[0].clientY - touchY;
+  
+  // 双击检测
+  const now = Date.now();
+  if (now - lastTap < 300) { drop(); lastTap = 0; return; }
+  lastTap = now;
+  
+  if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+    rotate();
+  } else if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 20) move(1, 0);
+    else if (dx < -20) move(-1, 0);
+  } else {
+    if (dy > 20 && move(0, 1)) { score += 1; updateStats(); }
+  }
+}, { passive: true });
+
+// 按钮事件
+els.playBtn.onclick = startGame;
+els.pauseBtn.onclick = pauseGame;
+els.restartBtn.onclick = () => { stopGame(); initGame(); startGame(); };
+$('playAgainBtn').onclick = () => { els.gameOverModal.classList.add('hidden'); initGame(); startGame(); };
+
+$('leftCtrl').onclick = () => move(-1, 0);
+$('rightCtrl').onclick = () => move(1, 0);
+$('downCtrl').onclick = () => { if (move(0, 1)) { score += 1; updateStats(); } };
+$('rotateCtrl').onclick = rotate;
+$('dropCtrl').onclick = drop;
+$('holdCtrl').onclick = hold;
+
+// 初始化
+initGame();
+</script>
+</body>
+</html>
