@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalityLab | 生命健康科学实验室</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            --sunshine: #ffd700;
+            --leaf: #4ade80;
+            --ocean: #0ea5e9;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            overflow-x: hidden;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
+        }
+        
+        .mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50px;
+            padding: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .mode-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .mode-switch {
+            width: 120px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mode-slider {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: white;
+            border-radius: 20px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .mode-slider.pro {
+            transform: translateX(100%);
+            color: #764ba2;
+        }
+        
+        .floating-emoji {
+            position: fixed;
+            font-size: 24px;
+            pointer-events: none;
+            animation: float 6s ease-in-out infinite;
+            opacity: 0.6;
+            z-index: 0;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+        
+        .sunburst {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
+            animation: rotate 60s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(132, 250, 176, 0.3);
+            border-color: #84fab0;
+        }
+        
+        .result-card {
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .result-card.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .pyramid-level {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .pyramid-level:hover {
+            transform: translateX(10px);
+            filter: brightness(1.1);
+        }
+        
+        .easter-egg {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+        
+        .easter-egg.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .easter-egg:hover {
+            animation: wiggle 0.5s ease-in-out;
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+        
+        .scientific-formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+        
+        .hidden-science {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        
+        .hidden-science.expanded {
+            max-height: 2000px;
+        }
+        
+        .pulse-ring {
+            position: absolute;
+            border: 2px solid rgba(132, 250, 176, 0.5);
+            border-radius: 50%;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        .quote-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+            border-left: 4px solid #ffd700;
+        }
+        
+        .bmi-arc {
+            transition: stroke-dashoffset 1s ease-out;
+        }
+        
+        .konami-code {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: #0f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 0 50px rgba(0,255,0,0.5);
+        }
+        
+        .micro-interaction {
+            transition: all 0.2s ease;
+        }
+        
+        .micro-interaction:active {
+            transform: scale(0.95);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative">
+    <!-- Background Elements -->
+    <div class="sunburst fixed top-0 left-0 -translate-x-1/2 -translate-y-1/2"></div>
+    <div id="floatingEmojis"></div>
+    
+    <!-- Mode Toggle -->
+    <div class="mode-toggle" onclick="toggleMode()" title="切换专业/普通模式">
+        <div class="mode-switch">
+            <div class="mode-slider" id="modeSlider">
+                <span id="modeText">简单</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Easter Egg Button -->
+    <div class="easter-egg" id="easterEgg" onclick="triggerEasterEgg()" title="点击有惊喜">
+        🧬
+    </div>
+
+    <!-- Konami Code Display -->
+    <div class="konami-code" id="konamiDisplay">
+        <h3 class="text-xl mb-2">🎮 秘籍模式已激活！</h3>
+        <p>你发现了隐藏的科学数据库...</p>
+        <p class="text-sm mt-2 text-gray-400">正在加载量子生物学档案...</p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8 max-w-6xl relative z-10">
+        
+        <!-- Header -->
+        <header class="text-center mb-12 relative">
+            <div class="inline-block relative">
+                <h1 class="text-5xl md:text-7xl font-black mb-4 gradient-text tracking-tight">
+                    VitalityLab
+                </h1>
+                <div class="pulse-ring absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"></div>
+            </div>
+            <p class="text-xl text-gray-600 mt-4 font-light" id="subtitle">
+                探索生命的科学艺术 · 基于WHO全球健康标准
+            </p>
+            <div class="mt-4 flex justify-center gap-2 flex-wrap" id="badges">
+                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">🌱 循证医学</span>
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">🔬 生物物理</span>
+                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">⚡ 代谢科学</span>
+            </div>
+        </header>
+
+        <!-- Daily Quote -->
+        <div class="quote-card rounded-2xl p-6 mb-8 shadow-lg transform hover:scale-[1.02] transition-transform cursor-pointer" onclick="newQuote()">
+            <div class="flex items-start gap-4">
+                <span class="text-4xl">💡</span>
+                <div class="flex-1">
+                    <p class="text-lg text-gray-800 italic font-medium" id="quoteText">
+                        "让食物成为你的药物，让药物成为你的食物。" —— 希波克拉底
+                    </p>
+                    <p class="text-sm text-gray-500 mt-2" id="quoteSource">古希腊医学之父</p>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600 micro-interaction">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="glass-panel rounded-3xl p-8 mb-8 shadow-xl">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span class="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center text-white text-sm">1</span>
+                身体数据录入
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">身高 (cm)</label>
+                    <div class="relative">
+                        <input type="number" id="height" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 input-glow outline-none transition-all text-lg" placeholder="175" oninput="calculateMetrics()">
+                        <span class="absolute right-4 top-3 text-gray-400">cm</span>
+                    </div>
+                    <p class="text-xs text-gray-500 hidden pro-only">精确到0.1cm，影响BMI计算精度</p>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">体重 (kg)</label>
+                    <div class="relative">
+                        <input type="number" id="weight" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 input-glow outline-none transition-all text-lg" placeholder="70" oninput="calculateMetrics()">
+                        <span class="absolute right-4 top-3 text-gray-400">kg</span>
+                    </div>
+                    <p class="text-xs text-gray-500 hidden pro-only">建议晨起排空后测量，使用校准电子秤</p>
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">年龄 / 性别</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="age" class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 input-glow outline-none transition-all text-lg" placeholder="25" oninput="calculateMetrics()">
+                        <select id="gender" class="px-4 py-3 rounded-xl border-2 border-gray-200 input-glow outline-none transition-all bg-white" onchange="calculateMetrics()">
+                            <option value="male">男</option>
+                            <option value="female">女</option>
+                        </select>
+                    </div>
+                    <p class="text-xs text-gray-500 hidden pro-only">影响基础代谢率(BMR)与体脂率算法</p>
+                </div>
+            </div>
+
+            <!-- Pro Mode: Advanced Metrics -->
+            <div class="mt-6 pt-6 border-t border-gray-200 hidden pro-only" id="advancedInputs">
+                <h3 class="text-lg font-semibold mb-4 text-purple-700">进阶人体测量学参数</h3>
+                <div class="grid md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">腰围 (cm)</label>
+                        <input type="number" id="waist" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm" placeholder="脐上1cm" oninput="calculateMetrics()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">颈围 (cm)</label>
+                        <input type="number" id="neck" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm" placeholder="喉结下" oninput="calculateMetrics()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">臀围 (cm)</label>
+                        <input type="number" id="hip" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm" placeholder="最宽处" oninput="calculateMetrics()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">活动系数</label>
+                        <select id="activity" class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm" onchange="calculateMetrics()">
+                            <option value="1.2">久坐 (办公室)</option>
+                            <option value="1.375">轻度活动 (每周1-3次)</option>
+                            <option value="1.55">中度活动 (每周3-5次)</option>
+                            <option value="1.725">高度活动 (每周6-7次)</option>
+                            <option value="1.9">运动员级别</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Dashboard -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            
+            <!-- BMI Analysis -->
+            <div class="glass-panel rounded-3xl p-8 shadow-xl result-card" id="bmiCard">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">BMI 身体质量指数</h3>
+                        <p class="text-sm text-gray-500 mt-1">WHO 国际标准分类</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-4xl font-black gradient-text" id="bmiValue">--</div>
+                        <div class="text-sm font-medium text-gray-600" id="bmiCategory">等待输入...</div>
+                    </div>
+                </div>
+                
+                <!-- BMI Visual Gauge -->
+                <div class="relative h-4 bg-gray-200 rounded-full overflow-hidden mb-4">
+                    <div class="absolute inset-0 flex">
+                        <div class="flex-1 bg-blue-300" title="偏瘦"></div>
+                        <div class="flex-1 bg-green-400" title="正常"></div>
+                        <div class="flex-1 bg-yellow-400" title="偏胖"></div>
+                        <div class="flex-1 bg-orange-400" title="肥胖"></div>
+                        <div class="flex-1 bg-red-400" title="重度"></div>
+                    </div>
+                    <div class="absolute top-0 w-1 h-full bg-black transition-all duration-1000" id="bmiMarker" style="left: 0%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mb-4">
+                    <span>18.5</span>
+                    <span>24</span>
+                    <span>28</span>
+                    <span>30</span>
+                </div>
+
+                <div class="bg-blue-50 rounded-xl p-4 border-l-4 border-blue-400">
+                    <p class="text-sm text-gray-700" id="bmiAdvice">
+                        请输入身高体重以获取个性化健康建议...
+                    </p>
+                </div>
+
+                <!-- Pro: BMI Limitations -->
+                <div class="hidden-science mt-4" id="bmiScience">
+                    <div class="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                        <h4 class="font-bold text-purple-800 mb-2 text-sm">🔬 BMI的物理学与生理学局限</h4>
+                        <ul class="text-xs text-purple-700 space-y-1 list-disc list-inside">
+                            <li><strong>密度忽略：</strong>BMI = m/h² 仅考虑质量与高度，忽略体成分（肌肉密度1.06g/cm³ vs 脂肪0.9g/cm³）</li>
+                            <li><strong>种族差异：</strong>亚洲人群在较低BMI时即呈现更高代谢风险（WHO西太平洋区建议：亚洲超重 cutoff 23，肥胖 27.5）</li>
+                            <li><strong>分布缺陷：</strong>无法反映脂肪分布，内脏脂肪(VAT)比皮下脂肪(SAT)具有更强的促炎因子分泌能力（IL-6, TNF-α）</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body Composition -->
+            <div class="glass-panel rounded-3xl p-8 shadow-xl result-card" id="bodyCompCard">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">体脂率与代谢</h3>
+                        <p class="text-sm text-gray-500 mt-1">基于美国海军公式 / Deurenberg 算法</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-4xl font-black text-orange-500" id="bfpValue">--%</div>
+                        <div class="text-sm font-medium text-gray-600" id="bfpCategory">等待数据...</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-orange-50 rounded-xl p-3 text-center">
+                        <div class="text-xs text-gray-500">基础代谢率 (BMR)</div>
+                        <div class="text-xl font-bold text-orange-600" id="bmrValue">-- kcal</div>
+                        <div class="text-xs text-gray-400 mt-1">Mifflin-St Jeor 方程</div>
+                    </div>
+                    <div class="bg-green-50 rounded-xl p-3 text-center">
+                        <div class="text-xs text-gray-500">每日总消耗 (TDEE)</div>
+                        <div class="text-xl font-bold text-green-600" id="tdeeValue">-- kcal</div>
+                        <div class="text-xs text-gray-400 mt-1">基于活动系数</div>
+                    </div>
+                </div>
+
+                <!-- Pro: Metabolic Science -->
+                <div class="hidden-science" id="metabolicScience">
+                    <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 border border-orange-200 mt-4">
+                        <h4 class="font-bold text-orange-800 mb-2 text-sm">⚡ 能量代谢的生化机制</h4>
+                        <div class="text-xs text-orange-700 space-y-2">
+                            <p><strong>线粒体解偶联：</strong>BMR的60-70%用于维持跨膜质子梯度(Δp)，通过ATP合酶(Complex V)的化学渗透偶联产生ATP。UCP1（解偶联蛋白1）在棕色脂肪组织(BAT)中可将质子梯度转化为热能而非ATP，这是非颤抖产热(NST)的基础。</p>
+                            <p><strong>瘦体重(LBM)决定论：</strong>每kg骨骼肌每日消耗13kcal，而脂肪仅消耗4.5kcal。因此BMR与LBM呈线性相关(r=0.65-0.85)，与总体重相关性较弱。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WHO Standards & Health Risks -->
+        <div class="glass-panel rounded-3xl p-8 mb-8 shadow-xl result-card">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span class="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-white text-sm">2</span>
+                全球健康风险评估
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">🌍</div>
+                        <h3 class="font-bold text-gray-800">WHO标准</h3>
+                    </div>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex justify-between"><span>健康腰围</span><span class="font-mono font-bold" id="waistStandard">男<94cm 女<80cm</span></li>
+                        <li class="flex justify-between"><span>腰臀比</span><span class="font-mono font-bold" id="whrStandard">男<0.90 女<0.85</span></li>
+                        <li class="flex justify-between"><span>体脂健康</span><span class="font-mono font-bold">男10-20% 女20-30%</span></li>
+                    </ul>
+                </div>
+
+                <div class="bg-gradient-to-br from-red-50 to-pink-50 rounded-2xl p-6 border border-red-100">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white">⚠️</div>
+                        <h3 class="font-bold text-gray-800">代谢综合征风险</h3>
+                    </div>
+                    <div id="riskAssessment" class="text-sm text-gray-600 space-y-2">
+                        <p>等待数据输入...</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">🎯</div>
+                        <h3 class="font-bold text-gray-800">理想体重区间</h3>
+                    </div>
+                    <div class="text-center py-2">
+                        <div class="text-3xl font-black text-green-600" id="idealWeight">-- - -- kg</div>
+                        <p class="text-xs text-gray-500 mt-2">基于BMI 18.5-24计算</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pro: Epidemiology -->
+            <div class="hidden-science mt-6" id="epiScience">
+                <div class="bg-gray-900 text-green-400 rounded-xl p-6 font-mono text-sm overflow-x-auto">
+                    <div class="flex items-center gap-2 mb-3 text-white">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="font-bold">流行病学数据模式 [专业模式]</span>
+                    </div>
+                    <p class="mb-2">// GBD 2019 全球疾病负担研究数据</p>
+                    <p class="mb-2">High_BMI_Attributable_Deaths = f(BMI, Age, Sex, Ethnicity)</p>
+                    <p class="mb-2">RR_ischemic_heart_disease = 1.5^( (BMI-25)/5 )  // 每增加5单位BMI，冠心病风险增加50%</p>
+                    <p class="mb-2">Population_Attributable_Fraction = (P_exposed * (RR-1)) / (1 + P_exposed*(RR-1))</p>
+                    <p class="text-gray-400 mt-4">// 中国数据：2019年高BMI导致的心血管死亡占全部CVD死亡的11.2%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nutrition Pyramid -->
+        <div class="glass-panel rounded-3xl p-8 mb-8 shadow-xl result-card">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center text-white text-sm">3</span>
+                现代营养金字塔与科学食谱
+            </h2>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Interactive Pyramid -->
+                <div class="relative">
+                    <h3 class="font-bold text-gray-700 mb-4">2024哈佛公共卫生学院健康餐盘模型</h3>
+                    <div class="space-y-2">
+                        <div class="pyramid-level bg-red-400 text-white p-4 rounded-t-2xl text-center font-bold shadow-lg" onclick="togglePyramidDetail('sugar')">
+                            <div class="text-sm opacity-90">限制摄入</div>
+                            <div class="text-lg">精制糖 & 红肉</div>
+                            <div class="text-xs mt-1 opacity-75">点击展开生化机制</div>
+                        </div>
+                        <div class="pyramid-level bg-yellow-400 text-white p-4 text-center font-bold shadow-lg" onclick="togglePyramidDetail('dairy')">
+                            <div class="text-sm opacity-90">适量</div>
+                            <div class="text-lg">乳制品 & 植物油</div>
+                        </div>
+                        <div class="pyramid-level bg-green-400 text-white p-4 text-center font-bold shadow-lg" onclick="togglePyramidDetail('protein')">
+                            <div class="text-sm opacity-90">优质蛋白</div>
+                            <div class="text-lg">鱼类、禽肉、豆类、坚果</div>
+                        </div>
+                        <div class="pyramid-level bg-blue-400 text-white p-4 text-center font-bold shadow-lg" onclick="togglePyramidDetail('veg')">
+                            <div class="text-sm opacity-90">大量摄入</div>
+                            <div class="text-lg">蔬菜 & 完整水果</div>
+                        </div>
+                        <div class="pyramid-level bg-purple-400 text-white p-4 rounded-b-2xl text-center font-bold shadow-lg" onclick="togglePyramidDetail('grain')">
+                            <div class="text-sm opacity-90">基础能量</div>
+                            <div class="text-lg">全谷物 & 健康碳水</div>
+                        </div>
+                    </div>
+
+                    <!-- Pyramid Detail Panel -->
+                    <div id="pyramidDetail" class="mt-4 p-4 bg-white rounded-xl border-2 border-gray-100 hidden">
+                        <h4 class="font-bold text-gray-800 mb-2" id="pyramidTitle">选择层级查看详情</h4>
+                        <p class="text-sm text-gray-600" id="pyramidContent">点击上方金字塔各层...</p>
+                    </div>
+                </div>
+
+                <!-- Regional Diets -->
+                <div>
+                    <h3 class="font-bold text-gray-700 mb-4">全球权威饮食模式对比</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-xl p-4 border-l-4 border-blue-500 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="showDietDetail('mediterranean')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">地中海饮食 (Mediterranean)</h4>
+                                    <p class="text-xs text-gray-500">连续6年全球最佳饮食排名#1 (U.S. News)</p>
+                                </div>
+                                <span class="text-2xl">🫒</span>
+                            </div>
+                            <div class="hidden-science mt-2 text-xs text-gray-600" id="mediterranean-detail">
+                                <strong>核心机制：</strong>高单不饱和脂肪酸(MUFA)摄入提升HDL-C，降低LDL氧化；多酚类化合物（羟基酪醇）激活SIRT1长寿基因；ω-3脂肪酸（EPA/DHA）竞争性抑制花生四烯酸代谢，减少促炎前列腺素合成。
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-4 border-l-4 border-red-500 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="showDietDetail('dash')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">DASH饮食</h4>
+                                    <p class="text-xs text-gray-500">控制高血压饮食法 (NIH认证)</p>
+                                </div>
+                                <span class="text-2xl">🥬</span>
+                            </div>
+                            <div class="hidden-science mt-2 text-xs text-gray-600" id="dash-detail">
+                                <strong>降压原理：</strong>高钾(K)摄入促进钠(Na)排泄，K/Na比值>2:1时激活肾素-血管紧张素-醛固酮系统(RAAS)负反馈；镁(Mg)作为钙通道天然阻滞剂，抑制血管平滑肌收缩；膳食纤维发酵产生短链脂肪酸(SCFA)，通过G蛋白偶联受体(GPR41/43)调节血压。
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-4 border-l-4 border-yellow-500 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="showDietDetail('mind')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">MIND饮食</h4>
+                                    <p class="text-xs text-gray-500">延缓神经退行 (Rush University)</p>
+                                </div>
+                                <span class="text-2xl">🧠</span>
+                            </div>
+                            <div class="hidden-science mt-2 text-xs text-gray-600" id="mind-detail">
+                                <strong>神经保护：</strong>维生素E(γ-生育酚)阻断脂质过氧化链式反应；类黄酮(anthocyanins)穿越血脑屏障，抑制β-淀粉样蛋白聚集；叶酸降低同型半胱氨酸(Hcy)，减少神经血管损伤。
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-4 border-l-4 border-green-500 shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="showDietDetail('okinawa')">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">冲绳饮食 (日本)</h4>
+                                    <p class="text-xs text-gray-500">百岁老人比例最高地区</p>
+                                </div>
+                                <span class="text-2xl">🍠</span>
+                            </div>
+                            <div class="hidden-science mt-2 text-xs text-gray-600" id="okinawa-detail">
+                                <strong>长寿机制：</strong>低热量但高营养密度(HAND)；紫薯中的花青素激活AMPK通路，模拟热量限制(CR)效应；味噌中的异黄酮作为植物雌激素调节端粒酶活性；80%饱腹感原则(Hara Hachi Bu)减少mTOR过度激活。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expert Advice Section -->
+        <div class="glass-panel rounded-3xl p-8 mb-8 shadow-xl result-card">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg flex items-center justify-center text-white text-sm">4</span>
+                权威建议与科学原理
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                        <div class="flex items-center gap-3 mb-2">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=WHO" class="w-10 h-10 rounded-full bg-blue-100">
+                            <div>
+                                <h4 class="font-bold text-gray-800">世界卫生组织 (WHO)</h4>
+                                <p class="text-xs text-gray-500">全球健康指南</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 italic">"成年人每周应进行至少150-300分钟的中等强度有氧运动，或75-150分钟的高强度运动，以维持代谢健康并降低非传染性疾病风险。"</p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-5 shadow-md border border-gray-100">
+                        <div class="flex items-center gap-3 mb-2">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Harvard" class="w-10 h-10 rounded-full bg-red-100">
+                            <div>
+                                <h4 class="font-bold text-gray-800">哈佛医学院</h4>
+                                <p class="text-xs text-gray-500">预防医学系</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 italic">"体重管理的核心在于胰岛素敏感性。间歇性禁食(16:8)可通过激活自噬作用(Autophagy)改善细胞胰岛素受体底物(IRS)的磷酸化状态。"</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200">
+                        <h4 class="font-bold text-purple-800 mb-3 flex items-center gap-2">
+                            <span class="text-xl">⚛️</span> 硬核科学：能量守恒与热力学
+                        </h4>
+                        <div class="text-sm text-purple-700 space-y-2">
+                            <p><strong>第一定律应用：</strong>ΔU = Q - W。体内能量储存变化(ΔU)等于摄入热量(Q)减去消耗(W)。当Q>W时，多余能量以甘油三酯形式储存在脂肪组织(Adipose Tissue)中，1kg脂肪≈7700kcal。</p>
+                            <p><strong>熵增原理：</strong>代谢过程产生热量散失，基础代谢率遵循Kleiber定律：BMR ∝ M^0.75，其中M为体重。这解释了为何大型动物单位体重代谢率更低。</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200">
+                        <h4 class="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                            <span class="text-xl">🧬</span> 分子生物学视角
+                        </h4>
+                        <div class="text-sm text-blue-700 space-y-2">
+                            <p><strong>脂肪生成(Lipogenesis)：</strong>胰岛素激活SREBP-1c，上调乙酰辅酶A羧化酶(ACC)和脂肪酸合酶(FAS)，将多余碳水化合物转化为棕榈酸酯(C16:0)。</p>
+                            <p><strong>脂肪分解(Lipolysis)：</strong>儿茶酚胺激活β-肾上腺素受体→cAMP↑→PKA激活→激素敏感性脂肪酶(HSL)磷酸化→甘油三酯水解为游离脂肪酸(FFA)和甘油。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm py-8 border-t border-gray-200">
+            <p class="mb-2">VitalityLab © 2024 | 基于 WHO、CDC、Harvard School of Public Health 最新指南</p>
+            <p class="text-xs">本工具仅供参考，不能替代专业医疗建议。如有健康问题，请咨询执业医师。</p>
+            <p class="mt-4 text-xs text-gray-400">彩蛋提示：尝试输入特定数值，或寻找隐藏的交互...</p>
+        </footer>
+    </div>
+
+    <script>
+        // Global State
+        let isProMode = false;
+        let konamiCode = [];
+        const secretCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createFloatingEmojis();
+            setupKonamiCode();
+            setTimeout(() => {
+                document.querySelectorAll('.result-card').forEach((card, index) => {
+                    setTimeout(() => card.classList.add('show'), index * 100);
+                });
+            }, 500);
+        });
+
+        // Mode Toggle
+        function toggleMode() {
+            isProMode = !isProMode;
+            const slider = document.getElementById('modeSlider');
+            const text = document.getElementById('modeText');
+            const subtitle = document.getElementById('subtitle');
+            const proElements = document.querySelectorAll('.pro-only');
+            
+            if (isProMode) {
+                slider.classList.add('pro');
+                text.textContent = '专业';
+                subtitle.innerHTML = '深度生物物理分析 · 分子代谢机制 · 流行病学数据';
+                proElements.forEach(el => el.classList.remove('hidden'));
+                document.getElementById('advancedInputs').classList.remove('hidden');
+                
+                // Expand scientific sections
+                document.querySelectorAll('.hidden-science').forEach(el => {
+                    if (!el.id.includes('detail')) el.classList.add('expanded');
+                });
+                
+                // Show Easter Egg hint
+                showToast('🧬 专业模式已激活 - 发现隐藏的科学彩蛋！');
+            } else {
+                slider.classList.remove('pro');
+                text.textContent = '简单';
+                subtitle.innerHTML = '探索生命的科学艺术 · 基于WHO全球健康标准';
+                proElements.forEach(el => el.classList.add('hidden'));
+                document.getElementById('advancedInputs').classList.add('hidden');
+                
+                document.querySelectorAll('.hidden-science').forEach(el => {
+                    if (!el.id.includes('detail')) el.classList.remove('expanded');
+                });
+            }
+            
+            calculateMetrics();
+        }
+
+        // Core Calculation Logic
+        function calculateMetrics() {
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const age = parseFloat(document.getElementById('age').value);
+            const gender = document.getElementById('gender').value;
+            const waist = parseFloat(document.getElementById('waist').value) || 0;
+            const neck = parseFloat(document.getElementById('neck').value) || 0;
+            const hip = parseFloat(document.getElementById('hip').value) || 0;
+            const activity = parseFloat(document.getElementById('activity').value) || 1.2;
+
+            if (!height || !weight || !age) {
+                resetDisplay();
+                return;
+            }
+
+            // BMI Calculation
+            const heightM = height / 100;
+            const bmi = weight / (heightM * heightM);
+            updateBMI(bmi);
+
+            // BMR (Mifflin-St Jeor)
+            let bmr;
+            if (gender === 'male') {
+                bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+            } else {
+                bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+            }
+
+            // Body Fat % (US Navy Method if measurements available, else Deurenberg)
+            let bfp;
+            if (waist && neck && (gender === 'male' || hip)) {
+                if (gender === 'male') {
+                    bfp = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+                } else {
+                    bfp = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+                }
+            } else {
+                // Deurenberg formula
+                bfp = (1.20 * bmi) + (0.23 * age) - (10.8 * (gender === 'male' ? 1 : 0)) - 5.4;
+            }
+
+            // Update displays
+            document.getElementById('bmiValue').textContent = bmi.toFixed(1);
+            document.getElementById('bfpValue').textContent = bfp.toFixed(1) + '%';
+            document.getElementById('bmrValue').textContent = Math.round(bmr) + ' kcal';
+            document.getElementById('tdeeValue').textContent = Math.round(bmr * activity) + ' kcal';
+            
+            // Ideal weight range
+            const minIdeal = 18.5 * heightM * heightM;
+            const maxIdeal = 24 * heightM * heightM;
+            document.getElementById('idealWeight').textContent = `${minIdeal.toFixed(1)} - ${maxIdeal.toFixed(1)} kg`;
+
+            // Categories
+            updateCategories(bmi, bfp, gender);
+            
+            // Risk Assessment
+            assessRisk(bmi, waist, gender, age);
+
+            // Check for Easter Eggs
+            checkEasterEggs(bmi, weight, height);
+        }
+
+        function updateBMI(bmi) {
+            const marker = document.getElementById('bmiMarker');
+            const category = document.getElementById('bmiCategory');
+            const advice = document.getElementById('bmiAdvice');
+            
+            // Position marker (0-40 scale)
+            const percentage = Math.min(Math.max((bmi / 40) * 100, 0), 100);
+            marker.style.left = percentage + '%';
+            
+            let cat, color, adv;
+            if (bmi < 18.5) {
+                cat = '偏瘦';
+                color = 'text-blue-500';
+                adv = 'BMI低于18.5可能提示营养不良或潜在疾病风险。建议增加优质蛋白摄入，进行抗阻训练以增加瘦体重。';
+            } else if (bmi < 24) {
+                cat = '正常';
+                color = 'text-green-500';
+                adv = '恭喜！您的BMI处于WHO推荐的亚洲健康范围内。保持当前的生活方式，定期监测体脂率变化。';
+            } else if (bmi < 28) {
+                cat = '超重';
+                color = 'text-yellow-600';
+                adv = 'BMI进入超重范围，建议控制精制碳水摄入，增加有氧运动至每周150分钟，关注腰围变化。';
+            } else {
+                cat = '肥胖';
+                color = 'text-red-500';
+                adv = 'BMI达到肥胖标准，代谢综合征风险显著增加。建议咨询医生制定减重计划，目标为每周减重0.5-1kg。';
+            }
+            
+            category.textContent = cat;
+            category.className = 'text-sm font-medium ' + color;
+            advice.textContent = adv;
+        }
+
+        function updateCategories(bmi, bfp, gender) {
+            let bfpCat, bfpColor;
+            const male = gender === 'male';
+            
+            if (bfp < (male ? 10 : 20)) {
+                bfpCat = '必需脂肪';
+                bfpColor = 'text-blue-500';
+            } else if (bfp < (male ? 20 : 30)) {
+                bfpCat = '健康';
+                bfpColor = 'text-green-500';
+            } else if (bfp < (male ? 25 : 35)) {
+                bfpCat = '偏高';
+                bfpColor = 'text-yellow-600';
+            } else {
+                bfpCat = '过高';
+                bfpColor = 'text-red-500';
+            }
+            
+            document.getElementById('bfpCategory').textContent = bfpCat;
+            document.getElementById('bfpCategory').className = 'text-sm font-medium ' + bfpColor;
+        }
+
+        function assessRisk(bmi, waist, gender, age) {
+            const riskDiv = document.getElementById('riskAssessment');
+            let risks = [];
+            
+            if (bmi >= 28) risks.push('⚠️ 肥胖相关疾病高风险');
+            else if (bmi >= 24) risks.push('⚡ 代谢综合征中风险');
+            
+            if (waist) {
+                const threshold = gender === 'male' ? 94 : 80;
+                if (waist > threshold) {
+                    risks.push('🎯 中心性肥胖 - 内脏脂肪堆积');
+                }
+            }
+            
+            if (age > 45) risks.push('📈 年龄相关代谢下降');
+            
+            if (risks.length === 0) {
+                riskDiv.innerHTML = '<p class="text-green-600 font-medium">✅ 当前指标显示代谢健康状态良好</p>';
+            } else {
+                riskDiv.innerHTML = risks.map(r => `<p class="mb-1">${r}</p>`).join('');
+            }
+        }
+
+        function resetDisplay() {
+            document.getElementById('bmiValue').textContent = '--';
+            document.getElementById('bfpValue').textContent = '--%';
+            document.getElementById('bmrValue').textContent = '-- kcal';
+            document.getElementById('tdeeValue').textContent = '-- kcal';
+            document.getElementById('bmiCategory').textContent = '等待输入...';
+            document.getElementById('bmiAdvice').textContent = '请输入身高体重以获取个性化健康建议...';
+            document.getElementById('riskAssessment').innerHTML = '<p>等待数据输入...</p>';
+        }
+
+        // Pyramid Interactions
+        function togglePyramidDetail(type) {
+            const detail = document.getElementById('pyramidDetail');
+            const title = document.getElementById('pyramidTitle');
+            const content = document.getElementById('pyramidContent');
+            
+            const details = {
+                sugar: {
+                    title: '🚫 精制糖与炎症反应',
+                    content: '高GI食物引起血糖骤升→胰岛素大量分泌→IRS-1丝氨酸磷酸化→胰岛素抵抗。果糖在肝脏代谢产生尿酸和甘油三酯，促进非酒精性脂肪肝(NAFLD)。'
+                },
+                dairy: {
+                    title: '🥛 乳制品的钙磷比',
+                    content: '理想钙磷比为2:1。乳制品提供生物可利用的钙质，但全脂奶含饱和脂肪酸。建议低脂发酵乳制品，其中的益生菌可调节肠道菌群-肠-脑轴。'
+                },
+                protein: {
+                    title: '🐟 蛋白质质量评分 (PDCAAS)',
+                    content: '鸡蛋(1.0) > 牛奶/牛肉(0.92) > 豆类(0.7-0.9)。亮氨酸(Leucine)是mTOR通路激活剂，触发肌肉蛋白合成(MPS)，建议每餐摄入3g以上。'
+                },
+                veg: {
+                    title: '🥬 植物化学物(Phytochemicals)',
+                    content: '硫代葡萄糖苷(Glucosinolates)在十字花科蔬菜中，经黑芥子酶水解为异硫氰酸酯，激活Nrf2抗氧化通路。膳食纤维经肠道菌群发酵产生丁酸，维护结肠上皮屏障。'
+                },
+                grain: {
+                    title: '🌾 全谷物与血糖指数',
+                    content: '完整谷粒含麸皮(纤维)、胚芽(维生素E、B族)和胚乳(淀粉)。精制过程去除前两者，导致GI值升高。β-葡聚糖(燕麦)形成凝胶延缓胃排空，降低餐后血糖峰值。'
+                }
+            };
+            
+            const info = details[type];
+            title.textContent = info.title;
+            content.textContent = info.content;
+            detail.classList.remove('hidden');
+            
+            if (isProMode) {
+                detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function showDietDetail(diet) {
+            const detail = document.getElementById(diet + '-detail');
+            if (detail.classList.contains('expanded')) {
+                detail.classList.remove('expanded');
+            } else {
+                // Close others
+                document.querySelectorAll('[id$="-detail"]').forEach(el => el.classList.remove('expanded'));
+                detail.classList.add('expanded');
+            }
+        }
+
+        // Quotes System
+        const quotes = [
+            { text: "让食物成为你的药物，让药物成为你的食物。", source: "希波克拉底 - 古希腊医学之父" },
+            { text: "生命在于运动，但过度运动产生自由基。", source: "现代运动医学共识" },
+            { text: "肠道是人体的第二大脑，拥有1亿个神经元。", source: "Michael Gershon - 神经胃肠病学" },
+            { text: "睡眠是大脑清除β-淀粉样蛋白的关键时间。", source: "Maiken Nedergaard - 类淋巴系统发现者" },
+            { text: "热量限制(CR)是目前唯一被证实可延长哺乳动物寿命的干预。", source: "Valter Longo - 南加州大学长寿研究所" },
+            { text: "线粒体不仅是能量工厂，也是细胞凋亡的调控中心。", source: "Douglas Wallace - 线粒体医学之父" }
+        ];
+
+        function newQuote() {
+            const quote = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('quoteText').style.opacity = 0;
+            setTimeout(() => {
+                document.getElementById('quoteText').textContent = `"${quote.text}"`;
+                document.getElementById('quoteSource').textContent = quote.source;
+                document.getElementById('quoteText').style.opacity = 1;
+            }, 300);
+        }
+
+        // Visual Effects
+        function createFloatingEmojis() {
+            const container = document.getElementById('floatingEmojis');
+            const emojis = ['🌱', '☀️', '🍎', '💪', '🧬', '⚡', '🥗', '💚'];
+            
+            for (let i = 0; i < 12; i++) {
+                const el = document.createElement('div');
+                el.className = 'floating-emoji';
+                el.textContent = emojis[i % emojis.length];
+                el.style.left = Math.random() * 100 + '%';
+                el.style.top = Math.random() * 100 + '%';
+                el.style.animationDelay = Math.random() * 6 + 's';
+                el.style.animationDuration = (6 + Math.random() * 4) + 's';
+                container.appendChild(el);
+            }
+        }
+
+        // Easter Eggs
+        function checkEasterEggs(bmi, weight, height) {
+            const egg = document.getElementById('easterEgg');
+            
+            // Show egg after any calculation
+            if (weight && height && !egg.classList.contains('show')) {
+                setTimeout(() => egg.classList.add('show'), 2000);
+            }
+            
+            // Special BMI (42 - Answer to everything)
+            if (Math.abs(bmi - 42) < 0.5) {
+                showToast('🌌 你发现了"生命、宇宙以及任何事情的终极答案"！');
+                document.body.style.filter = 'hue-rotate(180deg)';
+                setTimeout(() => document.body.style.filter = '', 3000);
+            }
+            
+            // Golden Ratio (1.618)
+            if (height && weight) {
+                const ratio = height / (weight * 0.618);
+                if (Math.abs(ratio - 100) < 2) {
+                    showToast('✨ 黄金比例身材！φ = 1.618...');
+                }
+            }
+        }
+
+        function triggerEasterEgg() {
+            const messages = [
+                "🧬 DNA双螺旋每分钟旋转约3000次！",
+                "⚡ 线粒体每年产生约10^20个ATP分子！",
+                "🧠 大脑仅重2%体重，却消耗20%能量！",
+                "💪 骨骼肌有640块，共约60亿条肌纤维！",
+                "🌟 人体细胞每7年完全更新一次！"
+            ];
+            showToast(messages[Math.floor(Math.random() * messages.length)]);
+            
+            // Create particle explosion
+            createParticles();
+        }
+
+        function createParticles() {
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.style.position = 'fixed';
+                p.style.width = '10px';
+                p.style.height = '10px';
+                p.style.background = `hsl(${Math.random() * 360}, 70%, 50%)`;
+                p.style.borderRadius = '50%';
+                p.style.left = '50%';
+                p.style.top = '50%';
+                p.style.pointerEvents = 'none';
+                p.style.zIndex = '9999';
+                document.body.appendChild(p);
+                
+                const angle = (Math.PI * 2 * i) / 20;
+                const velocity = 100 + Math.random() * 100;
+                
+                p.animate([
+                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                    { transform: `translate(${Math.cos(angle) * velocity}px, ${Math.sin(angle) * velocity}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 1000,
+                    easing: 'cubic-bezier(0, .9, .57, 1)'
+                }).onfinish = () => p.remove();
+            }
+        }
+
+        // Konami Code
+        function setupKonamiCode() {
+            document.addEventListener('keydown', (e) => {
+                konamiCode.push(e.key);
+                konamiCode = konamiCode.slice(-10);
+                
+                if (konamiCode.join(',') === secretCode.join(',')) {
+                    document.getElementById('konamiDisplay').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('konamiDisplay').style.display = 'none';
+                        activateGodMode();
+                    }, 3000);
+                }
+            });
+        }
+
+        function activateGodMode() {
+            showToast('🎮 上帝模式已激活！所有科学数据解锁！');
+            if (!isProMode) toggleMode();
+            
+            // Add extra science
+            document.querySelectorAll('.hidden-science').forEach(el => {
+                el.classList.add('expanded');
+                el.style.maxHeight = 'none';
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-2xl z-50 animate-bounce';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
