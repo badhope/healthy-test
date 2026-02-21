@@ -1,7 +1,6 @@
 # healthy-test
- 我将为您编写一份完整、专业的README文档，涵盖项目介绍、功能特性、技术架构、使用指南等所有重要内容。
 
-```markdown
+
 # 🧬 VitalityLab Pro | 生命健康科学实验室
 
 <p align="center">
