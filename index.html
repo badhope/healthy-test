@@ -97,504 +97,479 @@
 
     <!-- 主容器 -->
     <div class="container">
-        <!-- 头部 -->
-        <header>
-            <div class="header-left">
-                <button class="sidebar-toggle" id="sidebarToggle">☰</button>
-                <div class="logo-container">
-                    <h1 class="logo">Healthy-test</h1>
-                    <div class="logo-shine"></div>
-                </div>
-            </div>
-            <p class="subtitle" data-lang="subtitle">探索生命科学的无限可能 · 从分子到系统的健康全景</p>
-            <div class="badge-container">
-                <span class="badge badge-green" data-lang="badges.evidence">� 循证医学</span>
-                <span class="badge badge-blue" data-lang="badges.molecular">🔬 分子生物学</span>
-                <span class="badge badge-purple" data-lang="badges.biochemistry">⚗️ 生物化学</span>
-                <span class="badge badge-pink" data-lang="badges.genomics">🧬 基因组学</span>
-            </div>
-        </header>
+        <!-- 首页内容将通过JavaScript动态生成 -->
+    </div>
 
-        <!-- 总览标签 -->
-        <div id="tab-overview" class="tab-content active">
-            <!-- 数据输入 -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">📋</div>
-                    <div>
-                        <h2 class="card-title" data-lang="bodyLab">身体数据实验室</h2>
-                        <p class="card-subtitle" data-lang="bodyLabSubtitle">输入您的生理参数，开启深度健康分析</p>
-                    </div>
-                </div>
-
-                <div class="input-section">
-                    <div class="input-group">
-                        <label><span class="icon">📏</span><span data-lang="height">身高 Height</span></label>
-                        <div class="input-wrapper">
-                            <input type="number" id="height" placeholder="175.0" step="0.1" oninput="calculateAll()">
-                            <span class="unit">cm</span>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label><span class="icon">⚖️</span><span data-lang="weight">体重 Weight</span></label>
-                        <div class="input-wrapper">
-                            <input type="number" id="weight" placeholder="70.0" step="0.1" oninput="calculateAll()">
-                            <span class="unit">kg</span>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label><span class="icon">🎂</span><span data-lang="age">年龄 Age</span></label>
-                        <div class="input-wrapper">
-                            <input type="number" id="age" placeholder="25" oninput="calculateAll()">
-                            <span class="unit" data-lang="ageUnit">岁</span>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label><span class="icon">⚧</span><span data-lang="gender">性别 Sex</span></label>
-                        <select id="gender" onchange="calculateAll()" style="cursor: pointer;">
-                            <option value="male" data-lang="male">👨 男性 Male</option>
-                            <option value="female" data-lang="female">👩 女性 Female</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label><span class="icon">📏</span><span data-lang="waist">腰围 Waist</span></label>
-                        <div class="input-wrapper">
-                            <input type="number" id="waist" placeholder="80" step="0.1" oninput="calculateAll()">
-                            <span class="unit">cm</span>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label><span class="icon">🎯</span><span data-lang="goal">目标 Goal</span></label>
-                        <select id="goal" onchange="calculateAll()" style="cursor: pointer;">
-                            <option value="maintain" data-lang="maintain">⚖️ 保持 Maintain</option>
-                            <option value="lose" data-lang="lose">📉 减脂 Fat Loss</option>
-                            <option value="gain" data-lang="gain">📈 增肌 Muscle Gain</option>
-                            <option value="performance" data-lang="performance">🏃 运动表现 Performance</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div style="margin-top: 2rem; text-align: center;">
-                    <button class="btn btn-primary" onclick="calculateAll(true)" style="min-width: 200px;">
-                        <span>🚀</span> <span data-lang="analyze">启动全面分析</span>
-                    </button>
+    <!-- 标签内容 -->
+    <div id="tab-overview" class="tab-content">
+        <!-- 数据输入 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon">📋</div>
+                <div>
+                    <h2 class="card-title">身体数据实验室</h2>
+                    <p class="card-subtitle">输入您的生理参数，开启深度健康分析</p>
                 </div>
             </div>
 
-            <!-- 仪表盘 -->
-            <div class="dashboard" id="dashboard">
-                <div class="metric-card" data-tooltip="身体质量指数 - WHO标准">
-                    <span class="metric-icon">📊</span>
-                    <div class="metric-value" id="bmiValue">--</div>
-                    <div class="metric-label" data-lang="bmi">BMI 指数</div>
-                    <span class="metric-status status-good" id="bmiStatus">等待数据</span>
+            <div class="input-section">
+                <div class="input-group">
+                    <label><span class="icon">📏</span>身高 Height</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="height" placeholder="175.0" step="0.1" oninput="calculateAll()">
+                        <span class="unit">cm</span>
+                    </div>
                 </div>
-                <div class="metric-card" data-tooltip="基础代谢率 - Mifflin-St Jeor方程">
-                    <span class="metric-icon">🔥</span>
-                    <div class="metric-value" id="bmrValue">--</div>
-                    <div class="metric-label" data-lang="bmr">基础代谢 kcal</div>
-                    <span class="metric-status status-good">每日消耗</span>
+                <div class="input-group">
+                    <label><span class="icon">⚖️</span>体重 Weight</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="weight" placeholder="70.0" step="0.1" oninput="calculateAll()">
+                        <span class="unit">kg</span>
+                    </div>
                 </div>
-                <div class="metric-card" data-tooltip="体脂百分比 - 基于BMI估算">
-                    <span class="metric-icon">🥩</span>
-                    <div class="metric-value" id="bfpValue">--%</div>
-                    <div class="metric-label" data-lang="bfp">体脂率</div>
-                    <span class="metric-status status-good" id="bfpStatus">健康范围</span>
+                <div class="input-group">
+                    <label><span class="icon">🎂</span>年龄 Age</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="age" placeholder="25" oninput="calculateAll()">
+                        <span class="unit">岁</span>
+                    </div>
                 </div>
-                <div class="metric-card" data-tooltip="理想体重范围">
-                    <span class="metric-icon">🎯</span>
-                    <div class="metric-value" id="idealWeight">--</div>
-                    <div class="metric-label" data-lang="idealWeight">理想体重 kg</div>
-                    <span class="metric-status status-good">BMI 18.5-24</span>
+                <div class="input-group">
+                    <label><span class="icon">⚧</span>性别 Sex</label>
+                    <select id="gender" onchange="calculateAll()" style="cursor: pointer;">
+                        <option value="male">👨 男性 Male</option>
+                        <option value="female">👩 女性 Female</option>
+                    </select>
                 </div>
-                <div class="metric-card" data-tooltip="每日总能量消耗 - TDEE">
-                    <span class="metric-icon">⚡</span>
-                    <div class="metric-value" id="tdeeValue">--</div>
-                    <div class="metric-label" data-lang="tdee">每日消耗 kcal</div>
-                    <span class="metric-status status-good" id="tdeeStatus">维持体重</span>
+                <div class="input-group">
+                    <label><span class="icon">📏</span>腰围 Waist</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="waist" placeholder="80" step="0.1" oninput="calculateAll()">
+                        <span class="unit">cm</span>
+                    </div>
                 </div>
-                <div class="metric-card" data-tooltip="代谢当量 - 相对于静息代谢">
-                    <span class="metric-icon">🧪</span>
-                    <div class="metric-value" id="metValue">--</div>
-                    <div class="metric-label" data-lang="mets">METs</div>
-                    <span class="metric-status status-good">代谢水平</span>
+                <div class="input-group">
+                    <label><span class="icon">🎯</span>目标 Goal</label>
+                    <select id="goal" onchange="calculateAll()" style="cursor: pointer;">
+                        <option value="maintain">⚖️ 保持 Maintain</option>
+                        <option value="lose">📉 减脂 Fat Loss</option>
+                        <option value="gain">📈 增肌 Muscle Gain</option>
+                        <option value="performance">🏃 运动表现 Performance</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- 图表区 -->
-            <div class="chart-grid">
+            <div style="margin-top: 2rem; text-align: center;">
+                <button class="btn btn-primary" onclick="calculateAll(true)" style="min-width: 200px;">
+                    <span>🚀</span> 启动全面分析
+                </button>
+            </div>
+        </div>
+
+        <!-- 仪表盘 -->
+        <div class="dashboard" id="dashboard">
+            <div class="metric-card" data-tooltip="身体质量指数 - WHO标准">
+                <span class="metric-icon">📊</span>
+                <div class="metric-value" id="bmiValue">--</div>
+                <div class="metric-label">BMI 指数</div>
+                <span class="metric-status status-good" id="bmiStatus">等待数据</span>
+            </div>
+            <div class="metric-card" data-tooltip="基础代谢率 - Mifflin-St Jeor方程">
+                <span class="metric-icon">🔥</span>
+                <div class="metric-value" id="bmrValue">--</div>
+                <div class="metric-label">基础代谢 kcal</div>
+                <span class="metric-status status-good">每日消耗</span>
+            </div>
+            <div class="metric-card" data-tooltip="体脂百分比 - 基于BMI估算">
+                <span class="metric-icon">🥩</span>
+                <div class="metric-value" id="bfpValue">--%</div>
+                <div class="metric-label">体脂率</div>
+                <span class="metric-status status-good" id="bfpStatus">健康范围</span>
+            </div>
+            <div class="metric-card" data-tooltip="理想体重范围">
+                <span class="metric-icon">🎯</span>
+                <div class="metric-value" id="idealWeight">--</div>
+                <div class="metric-label">理想体重 kg</div>
+                <span class="metric-status status-good">BMI 18.5-24</span>
+            </div>
+            <div class="metric-card" data-tooltip="每日总能量消耗 - TDEE">
+                <span class="metric-icon">⚡</span>
+                <div class="metric-value" id="tdeeValue">--</div>
+                <div class="metric-label">每日消耗 kcal</div>
+                <span class="metric-status status-good" id="tdeeStatus">维持体重</span>
+            </div>
+            <div class="metric-card" data-tooltip="代谢当量 - 相对于静息代谢">
+                <span class="metric-icon">🧪</span>
+                <div class="metric-value" id="metValue">--</div>
+                <div class="metric-label">METs</div>
+                <span class="metric-status status-good">代谢水平</span>
+            </div>
+        </div>
+
+        <!-- 图表区 -->
+        <div class="chart-grid">
+            <div class="chart-box">
+                <div class="chart-title">📈 身体成分分析</div>
+                <div class="chart-container">
+                    <canvas id="bodyChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">🎯 健康风险评估</div>
+                <div class="chart-container">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">⚖️ 体重变化预测</div>
+                <div class="chart-container">
+                    <canvas id="weightChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-title">🍎 营养素需求分析</div>
+                <div class="chart-container">
+                    <canvas id="nutritionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 人体标签 -->
+    <div id="tab-body" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: var(--gradient-2);">🫀</div>
+                <div>
+                    <h2 class="card-title">交互式人体解剖</h2>
+                    <p class="card-subtitle">点击身体部位探索生理机制</p>
+                </div>
+            </div>
+
+            <div class="body-visual">
+                <svg class="body-svg" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 头部 -->
+                    <ellipse class="body-part" data-organ="brain" cx="100" cy="30" rx="25" ry="30" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                    <!-- 颈部 -->
+                    <rect class="body-part" data-organ="neck" x="90" y="60" width="20" height="20" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                    <!-- 胸部 -->
+                    <path class="body-part" data-organ="heart" d="M 60 90 Q 100 80 140 90 L 140 150 Q 100 160 60 150 Z" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                    <!-- 肺部 -->
+                    <ellipse class="body-part" data-organ="lung" cx="75" cy="120" rx="20" ry="30" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+                    <ellipse class="body-part" data-organ="lung" cx="125" cy="120" rx="20" ry="30" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
+                    <!-- 心脏 -->
+                    <path class="body-part" data-organ="heart" d="M 100 130 C 90 120, 80 120, 80 130 C 80 140, 100 155, 100 155 C 100 155, 120 140, 120 130 C 120 120, 110 120, 100 130" fill="#fecaca" stroke="#ef4444" stroke-width="2" opacity="0.8"/>
+                    <!-- 腹部 -->
+                    <ellipse class="body-part" data-organ="digestive" cx="100" cy="200" rx="45" ry="60" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                    <!-- 肝脏 -->
+                    <path class="body-part" data-organ="liver" d="M 80 170 Q 110 165 120 180 L 110 200 L 80 190 Z" fill="#fde68a" stroke="#f59e0b" stroke-width="2" opacity="0.7"/>
+                    <!-- 胃 -->
+                    <ellipse class="body-part" data-organ="stomach" cx="90" cy="210" rx="15" ry="20" fill="#fed7aa" stroke="#f97316" stroke-width="2" opacity="0.7"/>
+                    <!-- 肠道 -->
+                    <path class="body-part" data-organ="intestine" d="M 85 230 Q 70 250 85 270 Q 100 290 115 270 Q 130 250 115 230" fill="#bbf7d0" stroke="#22c55e" stroke-width="2" opacity="0.6" fill="none" stroke-width="8"/>
+                    <!-- 手臂 -->
+                    <rect class="body-part" data-organ="muscle" x="30" y="100" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                    <rect class="body-part" data-organ="muscle" x="145" y="100" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                    <!-- 腿部 -->
+                    <rect class="body-part" data-organ="muscle" x="70" y="270" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                    <rect class="body-part" data-organ="muscle" x="105" y="270" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                </svg>
+                
+                <div class="organ-info" id="organInfo">
+                    <h4 id="organTitle" style="margin-bottom: 0.5rem; color: var(--primary);"></h4>
+                    <p id="organDesc" style="font-size: 0.875rem; line-height: 1.5;"></p>
+                </div>
+            </div>
+
+            <div class="recommendation-grid" style="margin-top: 2rem;">
+                <div class="rec-card" onclick="showOrganDetail('brain')">
+                    <div class="rec-image" style="background: var(--gradient-3);">🧠</div>
+                    <div class="rec-content">
+                        <div class="rec-title">大脑与神经系统</div>
+                        <div class="rec-desc">仅占体重2%，消耗20%能量。包含860亿神经元，突触连接超过100万亿。</div>
+                        <div class="rec-tags">
+                            <span class="rec-tag">葡萄糖依赖</span>
+                            <span class="rec-tag">DHA</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="rec-card" onclick="showOrganDetail('heart')">
+                    <div class="rec-image" style="background: var(--gradient-2);">❤️</div>
+                    <div class="rec-content">
+                        <div class="rec-title">心血管系统</div>
+                        <div class="rec-desc">每天泵血7000升，一生跳动25-30亿次。冠状动脉供血，心肌细胞极少再生。</div>
+                        <div class="rec-tags">
+                            <span class="rec-tag">CoQ10</span>
+                            <span class="rec-tag">Omega-3</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="rec-card" onclick="showOrganDetail('liver')">
+                    <div class="rec-image" style="background: var(--gradient-4);">🫁</div>
+                    <div class="rec-content">
+                        <div class="rec-title">肝脏代谢中心</div>
+                        <div class="rec-desc">执行500+种功能，包括糖原储存、尿素循环、胆汁合成、药物代谢。</div>
+                        <div class="rec-tags">
+                            <span class="rec-tag">谷胱甘肽</span>
+                            <span class="rec-tag">B族维生素</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="rec-card" onclick="showOrganDetail('muscle')">
+                    <div class="rec-image" style="background: var(--gradient-1);">💪</div>
+                    <div class="rec-content">
+                        <div class="rec-title">骨骼肌系统</div>
+                        <div class="rec-desc">600+块肌肉，占体重40%。含肌原纤维，通过肌丝滑动原理收缩。</div>
+                        <div class="rec-tags">
+                            <span class="rec-tag">蛋白质</span>
+                            <span class="rec-tag">肌酸</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 化学标签 -->
+    <div id="tab-chemistry" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #f97316);">⚗️</div>
+                <div>
+                    <h2 class="card-title">人体必需元素周期表</h2>
+                    <p class="card-subtitle">点击元素查看生化功能与食物来源</p>
+                </div>
+            </div>
+
+            <div class="periodic-table" id="periodicTable">
+                <!-- 由JS生成 -->
+            </div>
+
+            <div class="chart-grid" style="margin-top: 2rem;">
                 <div class="chart-box">
-                    <div class="chart-title" data-lang="bodyComposition">📈 身体成分分析</div>
+                    <div class="chart-title">⚡ 电解质平衡</div>
                     <div class="chart-container">
-                        <canvas id="bodyChart"></canvas>
+                        <canvas id="electrolyteChart"></canvas>
                     </div>
                 </div>
                 <div class="chart-box">
-                    <div class="chart-title" data-lang="riskAssessment">🎯 健康风险评估</div>
+                    <div class="chart-title">🧬 微量元素需求</div>
                     <div class="chart-container">
-                        <canvas id="riskChart"></canvas>
+                        <canvas id="traceChart"></canvas>
                     </div>
                 </div>
-                <div class="chart-box">
-                    <div class="chart-title" data-lang="weightPrediction">⚖️ 体重变化预测</div>
-                    <div class="chart-container">
-                        <canvas id="weightChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-box">
-                    <div class="chart-title" data-lang="nutritionAnalysis">🍎 营养素需求分析</div>
-                    <div class="chart-container">
-                        <canvas id="nutritionChart"></canvas>
-                    </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 1.5rem; border-radius: 1rem; margin-top: 2rem;">
+                <h4 style="color: #92400e; margin-bottom: 1rem;">🔬 生物化学焦点：ATP合成</h4>
+                <p style="color: #78350f; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
+                    线粒体通过氧化磷酸化产生ATP。电子传递链(ETC)建立质子梯度(Δp)，驱动ATP合酶(F₀F₁复合体)旋转催化。
+                    每分子NADH产生2.5 ATP，FADH₂产生1.5 ATP。
+                </p>
+                <div style="background: white; padding: 1rem; border-radius: 0.5rem; font-family: monospace; font-size: 0.875rem; color: #1f2937;">
+                    C₆H₁₂O₆ + 6O₂ + 38ADP + 38Pᵢ → 6CO₂ + 6H₂O + 38ATP (ΔG°' = -2868 kJ/mol)
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- 人体标签 -->
-        <div id="tab-body" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: var(--gradient-2);">🫀</div>
-                    <div>
-                        <h2 class="card-title" data-lang="interactiveAnatomy">交互式人体解剖</h2>
-                        <p class="card-subtitle" data-lang="interactiveAnatomySubtitle">点击身体部位探索生理机制</p>
+    <!-- 消化标签 -->
+    <div id="tab-digestion" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">🍽️</div>
+                <div>
+                    <h2 class="card-title">消化系统时间轴</h2>
+                    <p class="card-subtitle">从口腔到肛门的奇妙旅程</p>
+                </div>
+            </div>
+
+            <div class="digestion-timeline">
+                <div class="timeline-line"></div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-icon">👄</div>
+                        <h4 style="font-weight: 700; margin-bottom: 0.5rem;">口腔 (0-5分钟)</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-light);">唾液淀粉酶(ptyalin)开始分解淀粉为麦芽糖。咀嚼刺激胃泌素释放。</p>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary); font-weight: 600;">pH: 6.5-7.5 | 酶: α-淀粉酶</div>
                     </div>
+                    <div class="timeline-dot"></div>
                 </div>
 
-                <div class="body-visual">
-                    <svg class="body-svg" viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 头部 -->
-                        <ellipse class="body-part" data-organ="brain" cx="100" cy="30" rx="25" ry="30" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
-                        <!-- 颈部 -->
-                        <rect class="body-part" data-organ="neck" x="90" y="60" width="20" height="20" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
-                        <!-- 胸部 -->
-                        <path class="body-part" data-organ="heart" d="M 60 90 Q 100 80 140 90 L 140 150 Q 100 160 60 150 Z" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
-                        <!-- 肺部 -->
-                        <ellipse class="body-part" data-organ="lung" cx="75" cy="120" rx="20" ry="30" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
-                        <ellipse class="body-part" data-organ="lung" cx="125" cy="120" rx="20" ry="30" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" opacity="0.5"/>
-                        <!-- 心脏 -->
-                        <path class="body-part" data-organ="heart" d="M 100 130 C 90 120, 80 120, 80 130 C 80 140, 100 155, 100 155 C 100 155, 120 140, 120 130 C 120 120, 110 120, 100 130" fill="#fecaca" stroke="#ef4444" stroke-width="2" opacity="0.8"/>
-                        <!-- 腹部 -->
-                        <ellipse class="body-part" data-organ="digestive" cx="100" cy="200" rx="45" ry="60" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
-                        <!-- 肝脏 -->
-                        <path class="body-part" data-organ="liver" d="M 80 170 Q 110 165 120 180 L 110 200 L 80 190 Z" fill="#fde68a" stroke="#f59e0b" stroke-width="2" opacity="0.7"/>
-                        <!-- 胃 -->
-                        <ellipse class="body-part" data-organ="stomach" cx="90" cy="210" rx="15" ry="20" fill="#fed7aa" stroke="#f97316" stroke-width="2" opacity="0.7"/>
-                        <!-- 肠道 -->
-                        <path class="body-part" data-organ="intestine" d="M 85 230 Q 70 250 85 270 Q 100 290 115 270 Q 130 250 115 230" fill="#bbf7d0" stroke="#22c55e" stroke-width="2" opacity="0.6" fill="none" stroke-width="8"/>
-                        <!-- 手臂 -->
-                        <rect class="body-part" data-organ="muscle" x="30" y="100" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
-                        <rect class="body-part" data-organ="muscle" x="145" y="100" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
-                        <!-- 腿部 -->
-                        <rect class="body-part" data-organ="muscle" x="70" y="270" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
-                        <rect class="body-part" data-organ="muscle" x="105" y="270" width="25" height="120" rx="10" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
-                    </svg>
-                    
-                    <div class="organ-info" id="organInfo">
-                        <h4 id="organTitle" style="margin-bottom: 0.5rem; color: var(--primary);"></h4>
-                        <p id="organDesc" style="font-size: 0.875rem; line-height: 1.5;"></p>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-icon">🦴</div>
+                        <h4 style="font-weight: 700; margin-bottom: 0.5rem;">食道 (5-10秒)</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-light);">蠕动波(peristalsis)推送食团。下食道括约肌(LES)防止胃酸反流。</p>
                     </div>
+                    <div class="timeline-dot"></div>
                 </div>
 
-                <div class="recommendation-grid" style="margin-top: 2rem;">
-                    <div class="rec-card" onclick="showOrganDetail('brain')">
-                        <div class="rec-image" style="background: var(--gradient-3);">🧠</div>
-                        <div class="rec-content">
-                            <div class="rec-title" data-lang="brain">大脑与神经系统</div>
-                            <div class="rec-desc" data-lang="brainDesc">仅占体重2%，消耗20%能量。包含860亿神经元，突触连接超过100万亿。</div>
-                            <div class="rec-tags">
-                                <span class="rec-tag">葡萄糖依赖</span>
-                                <span class="rec-tag">DHA</span>
-                            </div>
-                        </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-icon">🫃</div>
+                        <h4 style="font-weight: 700; margin-bottom: 0.5rem;">胃 (2-4小时)</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-light);">胃蛋白酶原→胃蛋白酶(酸性环境激活)。胃脂酶分解短链脂肪。 intrinsic factor结合B₁₂。</p>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--danger); font-weight: 600;">pH: 1.5-3.5 | 胃蛋白酶最适pH 1.5-2.5</div>
                     </div>
-                    <div class="rec-card" onclick="showOrganDetail('heart')">
-                        <div class="rec-image" style="background: var(--gradient-2);">❤️</div>
-                        <div class="rec-content">
-                            <div class="rec-title" data-lang="heart">心血管系统</div>
-                            <div class="rec-desc" data-lang="heartDesc">每天泵血7000升，一生跳动25-30亿次。冠状动脉供血，心肌细胞极少再生。</div>
-                            <div class="rec-tags">
-                                <span class="rec-tag">CoQ10</span>
-                                <span class="rec-tag">Omega-3</span>
-                            </div>
-                        </div>
+                    <div class="timeline-dot"></div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-icon">🌀</div>
+                        <h4 style="font-weight: 700; margin-bottom: 0.5rem;">小肠 (3-5小时)</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-light);">主要消化场所。胰液(碳酸氢盐+酶)、胆汁乳化脂肪。绒毛增加表面积600倍。</p>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary); font-weight: 600;">pH: 7-8 | 胰淀粉酶、脂肪酶、蛋白酶</div>
                     </div>
-                    <div class="rec-card" onclick="showOrganDetail('liver')">
-                        <div class="rec-image" style="background: var(--gradient-4);">🫁</div>
-                        <div class="rec-content">
-                            <div class="rec-title" data-lang="liver">肝脏代谢中心</div>
-                            <div class="rec-desc" data-lang="liverDesc">执行500+种功能，包括糖原储存、尿素循环、胆汁合成、药物代谢。</div>
-                            <div class="rec-tags">
-                                <span class="rec-tag">谷胱甘肽</span>
-                                <span class="rec-tag">B族维生素</span>
-                            </div>
-                        </div>
+                    <div class="timeline-dot"></div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-icon">🧻</div>
+                        <h4 style="font-weight: 700; margin-bottom: 0.5rem;">大肠 (12-48小时)</h4>
+                        <p style="font-size: 0.875rem; color: var(--text-light);">水分重吸收。肠道菌群发酵膳食纤维产生短链脂肪酸(SCFA)：乙酸、丙酸、丁酸。</p>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--purple); font-weight: 600;">菌群: 10¹⁴个细菌, 1000+物种</div>
                     </div>
-                    <div class="rec-card" onclick="showOrganDetail('muscle')">
-                        <div class="rec-image" style="background: var(--gradient-1);">💪</div>
-                        <div class="rec-content">
-                            <div class="rec-title" data-lang="muscle">骨骼肌系统</div>
-                            <div class="rec-desc" data-lang="muscleDesc">600+块肌肉，占体重40%。含肌原纤维，通过肌丝滑动原理收缩。</div>
-                            <div class="rec-tags">
-                                <span class="rec-tag">蛋白质</span>
-                                <span class="rec-tag">肌酸</span>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="timeline-dot"></div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- 化学标签 -->
-        <div id="tab-chemistry" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #f97316);">⚗️</div>
-                    <div>
-                        <h2 class="card-title" data-lang="periodicTable">人体必需元素周期表</h2>
-                        <p class="card-subtitle" data-lang="periodicTableSubtitle">点击元素查看生化功能与食物来源</p>
-                    </div>
+    <!-- 推荐标签 -->
+    <div id="tab-recommend" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #ec4899, #f472b6);">💡</div>
+                <div>
+                    <h2 class="card-title">个性化健康推荐</h2>
+                    <p class="card-subtitle">基于您的生物数据生成的专属方案</p>
                 </div>
+            </div>
 
-                <div class="periodic-table" id="periodicTable">
-                    <!-- 由JS生成 -->
-                </div>
-
-                <div class="chart-grid" style="margin-top: 2rem;">
-                    <div class="chart-box">
-                        <div class="chart-title" data-lang="electrolyteBalance">⚡ 电解质平衡</div>
-                        <div class="chart-container">
-                            <canvas id="electrolyteChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-box">
-                        <div class="chart-title" data-lang="traceElements">🧬 微量元素需求</div>
-                        <div class="chart-container">
-                            <canvas id="traceChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 1.5rem; border-radius: 1rem; margin-top: 2rem;">
-                    <h4 style="color: #92400e; margin-bottom: 1rem;" data-lang="atpSynthesis">🔬 生物化学焦点：ATP合成</h4>
-                    <p style="color: #78350f; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
-                        线粒体通过氧化磷酸化产生ATP。电子传递链(ETC)建立质子梯度(Δp)，驱动ATP合酶(F₀F₁复合体)旋转催化。
-                        每分子NADH产生2.5 ATP，FADH₂产生1.5 ATP。
-                    </p>
-                    <div style="background: white; padding: 1rem; border-radius: 0.5rem; font-family: monospace; font-size: 0.875rem; color: #1f2937;">
-                        C₆H₁₂O₆ + 6O₂ + 38ADP + 38Pᵢ → 6CO₂ + 6H₂O + 38ATP (ΔG°' = -2868 kJ/mol)
-                    </div>
-                </div>
+            <div class="recommendation-grid" id="recommendations">
+                <!-- 动态生成 -->
             </div>
         </div>
 
-        <!-- 消化标签 -->
-        <div id="tab-digestion" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">🍽️</div>
-                    <div>
-                        <h2 class="card-title" data-lang="digestionTimeline">消化系统时间轴</h2>
-                        <p class="card-subtitle" data-lang="digestionTimelineSubtitle">从口腔到肛门的奇妙旅程</p>
-                    </div>
+        <!-- 名言轮播 -->
+        <div class="quote-carousel" id="quoteCarousel">
+            <div class="quote-slide">
+                <div class="quote-text">"让食物成为你的药物，让药物成为你的食物。"</div>
+                <div class="quote-author">—— 希波克拉底 (Hippocrates) | 医学之父</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 像素人体标签 -->
+    <div id="tab-pixel-body" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #8b5cf6, #a855f7);">🎮</div>
+                <div>
+                    <h2 class="card-title">像素艺术人体</h2>
+                    <p class="card-subtitle">点击器官查看详细健康信息</p>
                 </div>
+            </div>
 
-                <div class="digestion-timeline">
-                    <div class="timeline-line"></div>
-                    
-                    <div class="timeline-item">
-                        <div class="timeline-content">
-                            <div class="timeline-icon">👄</div>
-                            <h4 style="font-weight: 700; margin-bottom: 0.5rem;" data-lang="mouth">口腔 (0-5分钟)</h4>
-                            <p style="font-size: 0.875rem; color: var(--text-light);" data-lang="mouthDesc">唾液淀粉酶(ptyalin)开始分解淀粉为麦芽糖。咀嚼刺激胃泌素释放。</p>
-                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary); font-weight: 600;">pH: 6.5-7.5 | 酶: α-淀粉酶</div>
-                        </div>
-                        <div class="timeline-dot"></div>
-                    </div>
-
-                    <div class="timeline-item">
-                        <div class="timeline-content">
-                            <div class="timeline-icon">🦴</div>
-                            <h4 style="font-weight: 700; margin-bottom: 0.5rem;" data-lang="esophagus">食道 (5-10秒)</h4>
-                            <p style="font-size: 0.875rem; color: var(--text-light);" data-lang="esophagusDesc">蠕动波(peristalsis)推送食团。下食道括约肌(LES)防止胃酸反流。</p>
-                        </div>
-                        <div class="timeline-dot"></div>
-                    </div>
-
-                    <div class="timeline-item">
-                        <div class="timeline-content">
-                            <div class="timeline-icon">🫃</div>
-                            <h4 style="font-weight: 700; margin-bottom: 0.5rem;" data-lang="stomach">胃 (2-4小时)</h4>
-                            <p style="font-size: 0.875rem; color: var(--text-light);" data-lang="stomachDesc">胃蛋白酶原→胃蛋白酶(酸性环境激活)。胃脂酶分解短链脂肪。 intrinsic factor结合B₁₂。</p>
-                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--danger); font-weight: 600;">pH: 1.5-3.5 | 胃蛋白酶最适pH 1.5-2.5</div>
-                        </div>
-                        <div class="timeline-dot"></div>
-                    </div>
-
-                    <div class="timeline-item">
-                        <div class="timeline-content">
-                            <div class="timeline-icon">🌀</div>
-                            <h4 style="font-weight: 700; margin-bottom: 0.5rem;" data-lang="smallIntestine">小肠 (3-5小时)</h4>
-                            <p style="font-size: 0.875rem; color: var(--text-light);" data-lang="smallIntestineDesc">主要消化场所。胰液(碳酸氢盐+酶)、胆汁乳化脂肪。绒毛增加表面积600倍。</p>
-                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--secondary); font-weight: 600;">pH: 7-8 | 胰淀粉酶、脂肪酶、蛋白酶</div>
-                        </div>
-                        <div class="timeline-dot"></div>
-                    </div>
-
-                    <div class="timeline-item">
-                        <div class="timeline-content">
-                            <div class="timeline-icon">🧻</div>
-                            <h4 style="font-weight: 700; margin-bottom: 0.5rem;" data-lang="largeIntestine">大肠 (12-48小时)</h4>
-                            <p style="font-size: 0.875rem; color: var(--text-light);" data-lang="largeIntestineDesc">水分重吸收。肠道菌群发酵膳食纤维产生短链脂肪酸(SCFA)：乙酸、丙酸、丁酸。</p>
-                            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--purple); font-weight: 600;">菌群: 10¹⁴个细菌, 1000+物种</div>
-                        </div>
-                        <div class="timeline-dot"></div>
-                    </div>
+            <div class="pixel-body-container">
+                <div class="pixel-body" id="pixelBody"></div>
+                <div class="organ-info-panel" id="pixelOrganInfo">
+                    <h3 id="pixelOrganTitle">选择一个器官</h3>
+                    <p id="pixelOrganDesc">点击像素人体上的器官以查看详细信息</p>
+                    <div class="organ-metrics" id="pixelOrganMetrics"></div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- 推荐标签 -->
-        <div id="tab-recommend" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #ec4899, #f472b6);">💡</div>
-                    <div>
-                        <h2 class="card-title" data-lang="personalizedRecommendations">个性化健康推荐</h2>
-                        <p class="card-subtitle" data-lang="personalizedRecommendationsSubtitle">基于您的生物数据生成的专属方案</p>
-                    </div>
-                </div>
-
-                <div class="recommendation-grid" id="recommendations">
-                    <!-- 动态生成 -->
+    <!-- 健康提醒标签 -->
+    <div id="tab-reminders" class="tab-content">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #f97316);">⏰</div>
+                <div>
+                    <h2 class="card-title">健康提醒</h2>
+                    <p class="card-subtitle">设置水喝提醒、 meal时间提醒和减肥提醒</p>
                 </div>
             </div>
 
-            <!-- 名言轮播 -->
-            <div class="quote-carousel" id="quoteCarousel">
-                <div class="quote-slide">
-                    <div class="quote-text">"让食物成为你的药物，让药物成为你的食物。"</div>
-                    <div class="quote-author">—— 希波克拉底 (Hippocrates) | 医学之父</div>
+            <div class="reminder-section">
+                <h3>水喝提醒</h3>
+                <div class="reminder-setting">
+                    <label>提醒间隔 (分钟):</label>
+                    <input type="number" id="waterInterval" min="15" max="180" value="60">
+                    <button class="btn btn-primary" onclick="setWaterReminder()">设置提醒</button>
                 </div>
-            </div>
-        </div>
-
-        <!-- 像素人体标签 -->
-        <div id="tab-pixel-body" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #8b5cf6, #a855f7);">🎮</div>
-                    <div>
-                        <h2 class="card-title">像素艺术人体</h2>
-                        <p class="card-subtitle">点击器官查看详细健康信息</p>
-                    </div>
-                </div>
-
-                <div class="pixel-body-container">
-                    <div class="pixel-body" id="pixelBody"></div>
-                    <div class="organ-info-panel" id="pixelOrganInfo">
-                        <h3 id="pixelOrganTitle">选择一个器官</h3>
-                        <p id="pixelOrganDesc">点击像素人体上的器官以查看详细信息</p>
-                        <div class="organ-metrics" id="pixelOrganMetrics"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 健康提醒标签 -->
-        <div id="tab-reminders" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #f97316);">⏰</div>
-                    <div>
-                        <h2 class="card-title">健康提醒</h2>
-                        <p class="card-subtitle">设置水喝提醒、 meal时间提醒和减肥提醒</p>
-                    </div>
-                </div>
-
-                <div class="reminder-section">
-                    <h3>水喝提醒</h3>
-                    <div class="reminder-setting">
-                        <label>提醒间隔 (分钟):</label>
-                        <input type="number" id="waterInterval" min="15" max="180" value="60">
-                        <button class="btn btn-primary" onclick="setWaterReminder()">设置提醒</button>
-                    </div>
-                    <div id="waterStatus" class="reminder-status">未设置</div>
-                </div>
-
-                <div class="reminder-section">
-                    <h3>Meal时间提醒</h3>
-                    <div class="reminder-setting">
-                        <label>早餐时间:</label>
-                        <input type="time" id="breakfastTime" value="08:00">
-                    </div>
-                    <div class="reminder-setting">
-                        <label>午餐时间:</label>
-                        <input type="time" id="lunchTime" value="12:00">
-                    </div>
-                    <div class="reminder-setting">
-                        <label>晚餐时间:</label>
-                        <input type="time" id="dinnerTime" value="18:00">
-                    </div>
-                    <button class="btn btn-primary" onclick="setMealReminders()">设置提醒</button>
-                    <div id="mealStatus" class="reminder-status">未设置</div>
-                </div>
-
-                <div class="reminder-section">
-                    <h3>减肥提醒</h3>
-                    <div class="reminder-setting">
-                        <label>目标体重 (kg):</label>
-                        <input type="number" id="targetWeight" min="30" max="200" step="0.1">
-                    </div>
-                    <div class="reminder-setting">
-                        <label>提醒频率:</label>
-                        <select id="weightReminderFrequency">
-                            <option value="daily">每天</option>
-                            <option value="weekly">每周</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" onclick="setWeightReminder()">设置提醒</button>
-                    <div id="weightStatus" class="reminder-status">未设置</div>
-                </div>
+                <div id="waterStatus" class="reminder-status">未设置</div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">🍎</div>
-                    <div>
-                        <h2 class="card-title">卡路里计算工具</h2>
-                        <p class="card-subtitle">计算食物卡路里和每日需求</p>
-                    </div>
+            <div class="reminder-section">
+                <h3>Meal时间提醒</h3>
+                <div class="reminder-setting">
+                    <label>早餐时间:</label>
+                    <input type="time" id="breakfastTime" value="08:00">
                 </div>
-
-                <div class="calorie-calculator">
-                    <div class="input-group">
-                        <label>食物名称:</label>
-                        <input type="text" id="foodName" placeholder="例如: 苹果">
-                    </div>
-                    <div class="input-group">
-                        <label>重量 (g):</label>
-                        <input type="number" id="foodWeight" min="1" step="1" value="100">
-                    </div>
-                    <button class="btn btn-primary" onclick="calculateCalories()">计算卡路里</button>
-                    <div id="calorieResult" class="result"></div>
-
-                    <div class="calorie-needs">
-                        <h3>每日卡路里需求</h3>
-                        <div id="dailyCalories" class="result">请先填写身体数据</div>
-                    </div>
+                <div class="reminder-setting">
+                    <label>午餐时间:</label>
+                    <input type="time" id="lunchTime" value="12:00">
                 </div>
+                <div class="reminder-setting">
+                    <label>晚餐时间:</label>
+                    <input type="time" id="dinnerTime" value="18:00">
+                </div>
+                <button class="btn btn-primary" onclick="setMealReminders()">设置提醒</button>
+                <div id="mealStatus" class="reminder-status">未设置</div>
+            </div>
+
+            <div class="reminder-section">
+                <h3>减肥提醒</h3>
+                <div class="reminder-setting">
+                    <label>目标体重 (kg):</label>
+                    <input type="number" id="targetWeight" min="30" max="200" step="0.1">
+                </div>
+                <div class="reminder-setting">
+                    <label>提醒频率:</label>
+                    <select id="weightReminderFrequency">
+                        <option value="daily">每天</option>
+                        <option value="weekly">每周</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="setWeightReminder()">设置提醒</button>
+                <div id="weightStatus" class="reminder-status">未设置</div>
             </div>
         </div>
 
-        <!-- 页脚 -->
-        <footer style="text-align: center; padding: 3rem 1rem; color: var(--text-light);">
-            <p style="font-weight: 600; margin-bottom: 0.5rem;">Healthy-test © 2026</p>
-            <p style="font-size: 0.875rem; opacity: 0.8;" data-lang="footer">基于 WHO、NIH、Harvard Medical School 最新研究</p>
-            <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 1rem;" data-lang="privacyNote">
-                🔒 隐私模式：所有计算在本地完成，数据不会上传服务器
-            </p>
-        </footer>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">🍎</div>
+                <div>
+                    <h2 class="card-title">卡路里计算工具</h2>
+                    <p class="card-subtitle">计算食物卡路里和每日需求</p>
+                </div>
+            </div>
+
+            <div class="calorie-calculator">
+                <div class="input-group">
+                    <label>食物名称:</label>
+                    <input type="text" id="foodName" placeholder="例如: 苹果">
+                </div>
+                <div class="input-group">
+                    <label>重量 (g):</label>
+                    <input type="number" id="foodWeight" min="1" step="1" value="100">
+                </div>
+                <button class="btn btn-primary" onclick="calculateCalories()">计算卡路里</button>
+                <div id="calorieResult" class="result"></div>
+
+                <div class="calorie-needs">
+                    <h3>每日卡路里需求</h3>
+                    <div id="dailyCalories" class="result">请先填写身体数据</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 模态框 -->
