@@ -9,7 +9,8 @@ const VitalityLab = {
         isPrivacyMode: false,
         userData: {},
         chartCache: new Map(),
-        currentLanguage: 'zh'
+        currentLanguage: 'zh',
+        healthHistory: []
     },
     
     // 语言资源
@@ -274,6 +275,50 @@ const VitalityLab = {
         
         met: (bmr, weight) => {
             return bmr / (3.5 * weight);
+        }
+    },
+    
+    // 数据存储模块
+    storage: {
+        saveHealthData(data) {
+            try {
+                const history = this.getHealthHistory();
+                const newRecord = {
+                    ...data,
+                    timestamp: new Date().toISOString(),
+                    date: new Date().toLocaleDateString()
+                };
+                history.unshift(newRecord);
+                // 只保留最近30条记录
+                if (history.length > 30) {
+                    history.splice(30);
+                }
+                localStorage.setItem('vitalitylab-health-history', JSON.stringify(history));
+                return true;
+            } catch (error) {
+                console.error('保存健康数据失败:', error);
+                return false;
+            }
+        },
+        
+        getHealthHistory() {
+            try {
+                const history = localStorage.getItem('vitalitylab-health-history');
+                return history ? JSON.parse(history) : [];
+            } catch (error) {
+                console.error('获取健康历史失败:', error);
+                return [];
+            }
+        },
+        
+        clearHealthHistory() {
+            try {
+                localStorage.removeItem('vitalitylab-health-history');
+                return true;
+            } catch (error) {
+                console.error('清除健康历史失败:', error);
+                return false;
+            }
         }
     }
 };
@@ -643,14 +688,29 @@ function initCharts() {
         { label: '睡眠', value: 75 }
     ]);
 
-    // 体重预测折线图
-    createLineChart('weightChart', [
-        { label: '当前', value: 70 },
-        { label: '1月', value: 68 },
-        { label: '3月', value: 65 },
-        { label: '6月', value: 63 },
-        { label: '1年', value: 62 }
-    ]);
+    // 体重历史趋势图
+    const history = VitalityLab.storage.getHealthHistory();
+    let weightData = [];
+    
+    if (history.length > 0) {
+        // 最多显示最近10条记录
+        const recentHistory = history.slice(0, 10).reverse();
+        weightData = recentHistory.map(record => ({
+            label: record.date,
+            value: record.weight
+        }));
+    } else {
+        // 默认数据
+        weightData = [
+            { label: '当前', value: 70 },
+            { label: '1月', value: 68 },
+            { label: '3月', value: 65 },
+            { label: '6月', value: 63 },
+            { label: '1年', value: 62 }
+        ];
+    }
+    
+    createLineChart('weightChart', weightData);
 
     // 营养素柱状图
     createBarChart('nutritionChart', [
@@ -676,6 +736,225 @@ function initCharts() {
         { label: '硒', value: 10, color: '#10b981' },
         { label: '碘', value: 10, color: '#0ea5e9' }
     ]);
+}
+
+// 初始化健康历史数据
+function initHealthHistory() {
+    VitalityLab.state.healthHistory = VitalityLab.storage.getHealthHistory();
+    console.log('健康历史数据已加载:', VitalityLab.state.healthHistory.length, '条记录');
+}
+
+// 像素艺术人体数据
+const pixelOrgans = {
+    brain: {
+        name: '大脑',
+        color: 'organ-brain',
+        position: [
+            // 大脑像素位置
+            {x: 12, y: 5}, {x: 13, y: 5}, {x: 14, y: 5}, {x: 15, y: 5}, {x: 16, y: 5}, {x: 17, y: 5},
+            {x: 11, y: 6}, {x: 12, y: 6}, {x: 13, y: 6}, {x: 14, y: 6}, {x: 15, y: 6}, {x: 16, y: 6}, {x: 17, y: 6}, {x: 18, y: 6},
+            {x: 10, y: 7}, {x: 11, y: 7}, {x: 12, y: 7}, {x: 13, y: 7}, {x: 14, y: 7}, {x: 15, y: 7}, {x: 16, y: 7}, {x: 17, y: 7}, {x: 18, y: 7}, {x: 19, y: 7},
+            {x: 10, y: 8}, {x: 11, y: 8}, {x: 12, y: 8}, {x: 13, y: 8}, {x: 14, y: 8}, {x: 15, y: 8}, {x: 16, y: 8}, {x: 17, y: 8}, {x: 18, y: 8}, {x: 19, y: 8},
+            {x: 11, y: 9}, {x: 12, y: 9}, {x: 13, y: 9}, {x: 14, y: 9}, {x: 15, y: 9}, {x: 16, y: 9}, {x: 17, y: 9}, {x: 18, y: 9},
+            {x: 12, y: 10}, {x: 13, y: 10}, {x: 14, y: 10}, {x: 15, y: 10}, {x: 16, y: 10}, {x: 17, y: 10}
+        ],
+        desc: '大脑是人体的控制中心，负责处理信息、控制运动和调节生理功能。',
+        metrics: [
+            { label: '重量', value: '1.4 kg' },
+            { label: '神经元', value: '860亿' },
+            { label: '能量消耗', value: '20%' }
+        ]
+    },
+    heart: {
+        name: '心脏',
+        color: 'organ-heart',
+        position: [
+            // 心脏像素位置
+            {x: 14, y: 18}, {x: 15, y: 18}, {x: 16, y: 18},
+            {x: 13, y: 19}, {x: 14, y: 19}, {x: 15, y: 19}, {x: 16, y: 19}, {x: 17, y: 19},
+            {x: 12, y: 20}, {x: 13, y: 20}, {x: 14, y: 20}, {x: 15, y: 20}, {x: 16, y: 20}, {x: 17, y: 20}, {x: 18, y: 20},
+            {x: 13, y: 21}, {x: 14, y: 21}, {x: 15, y: 21}, {x: 16, y: 21}, {x: 17, y: 21},
+            {x: 14, y: 22}, {x: 15, y: 22}, {x: 16, y: 22}
+        ],
+        desc: '心脏是人体的泵血器官，负责将血液输送到全身各个组织和器官。',
+        metrics: [
+            { label: '跳动次数', value: '25-30亿次' },
+            { label: '泵血量', value: '7000升/天' },
+            { label: '重量', value: '250-350g' }
+        ]
+    },
+    lung: {
+        name: '肺部',
+        color: 'organ-lung',
+        position: [
+            // 左肺
+            {x: 9, y: 16}, {x: 10, y: 16}, {x: 11, y: 16}, {x: 12, y: 16},
+            {x: 8, y: 17}, {x: 9, y: 17}, {x: 10, y: 17}, {x: 11, y: 17}, {x: 12, y: 17}, {x: 13, y: 17},
+            {x: 8, y: 18}, {x: 9, y: 18}, {x: 10, y: 18}, {x: 11, y: 18}, {x: 12, y: 18}, {x: 13, y: 18},
+            {x: 9, y: 19}, {x: 10, y: 19}, {x: 11, y: 19}, {x: 12, y: 19},
+            // 右肺
+            {x: 17, y: 16}, {x: 18, y: 16}, {x: 19, y: 16}, {x: 20, y: 16},
+            {x: 16, y: 17}, {x: 17, y: 17}, {x: 18, y: 17}, {x: 19, y: 17}, {x: 20, y: 17}, {x: 21, y: 17},
+            {x: 16, y: 18}, {x: 17, y: 18}, {x: 18, y: 18}, {x: 19, y: 18}, {x: 20, y: 18}, {x: 21, y: 18},
+            {x: 17, y: 19}, {x: 18, y: 19}, {x: 19, y: 19}, {x: 20, y: 19}
+        ],
+        desc: '肺部是人体的呼吸器官，负责气体交换，将氧气输送到血液中，同时排出二氧化碳。',
+        metrics: [
+            { label: '肺泡数量', value: '3亿个' },
+            { label: '表面积', value: '70-100㎡' },
+            { label: '呼吸频率', value: '12-20次/分钟' }
+        ]
+    },
+    liver: {
+        name: '肝脏',
+        color: 'organ-liver',
+        position: [
+            // 肝脏像素位置
+            {x: 10, y: 22}, {x: 11, y: 22}, {x: 12, y: 22}, {x: 13, y: 22},
+            {x: 10, y: 23}, {x: 11, y: 23}, {x: 12, y: 23}, {x: 13, y: 23}, {x: 14, y: 23},
+            {x: 10, y: 24}, {x: 11, y: 24}, {x: 12, y: 24}, {x: 13, y: 24}, {x: 14, y: 24},
+            {x: 11, y: 25}, {x: 12, y: 25}, {x: 13, y: 25}
+        ],
+        desc: '肝脏是人体最大的内脏器官，负责代谢、解毒、储存糖原和合成胆汁等功能。',
+        metrics: [
+            { label: '重量', value: '1.2-1.5 kg' },
+            { label: '功能数量', value: '500+' },
+            { label: '再生能力', value: '强' }
+        ]
+    },
+    stomach: {
+        name: '胃',
+        color: 'organ-stomach',
+        position: [
+            // 胃像素位置
+            {x: 13, y: 24}, {x: 14, y: 24}, {x: 15, y: 24}, {x: 16, y: 24},
+            {x: 12, y: 25}, {x: 13, y: 25}, {x: 14, y: 25}, {x: 15, y: 25}, {x: 16, y: 25}, {x: 17, y: 25},
+            {x: 12, y: 26}, {x: 13, y: 26}, {x: 14, y: 26}, {x: 15, y: 26}, {x: 16, y: 26}, {x: 17, y: 26},
+            {x: 13, y: 27}, {x: 14, y: 27}, {x: 15, y: 27}, {x: 16, y: 27}
+        ],
+        desc: '胃是人体的消化器官，负责储存和初步消化食物，分泌胃酸和消化酶。',
+        metrics: [
+            { label: '容量', value: '1.5-2升' },
+            { label: 'pH值', value: '1.5-3.5' },
+            { label: '消化时间', value: '2-4小时' }
+        ]
+    },
+    intestine: {
+        name: '肠道',
+        color: 'organ-intestine',
+        position: [
+            // 肠道像素位置
+            {x: 10, y: 28}, {x: 11, y: 28}, {x: 12, y: 28}, {x: 13, y: 28}, {x: 14, y: 28}, {x: 15, y: 28}, {x: 16, y: 28}, {x: 17, y: 28}, {x: 18, y: 28}, {x: 19, y: 28},
+            {x: 10, y: 29}, {x: 11, y: 29}, {x: 12, y: 29}, {x: 13, y: 29}, {x: 14, y: 29}, {x: 15, y: 29}, {x: 16, y: 29}, {x: 17, y: 29}, {x: 18, y: 29}, {x: 19, y: 29},
+            {x: 11, y: 30}, {x: 12, y: 30}, {x: 13, y: 30}, {x: 14, y: 30}, {x: 15, y: 30}, {x: 16, y: 30}, {x: 17, y: 30}, {x: 18, y: 30},
+            {x: 12, y: 31}, {x: 13, y: 31}, {x: 14, y: 31}, {x: 15, y: 31}, {x: 16, y: 31}, {x: 17, y: 31}
+        ],
+        desc: '肠道是人体的消化和吸收器官，分为小肠和大肠，负责吸收营养物质和排出废物。',
+        metrics: [
+            { label: '长度', value: '6-7米' },
+            { label: '吸收面积', value: '200-300㎡' },
+            { label: '菌群数量', value: '10¹⁴个' }
+        ]
+    },
+    muscle: {
+        name: '肌肉',
+        color: 'organ-muscle',
+        position: [
+            // 手臂肌肉
+            {x: 5, y: 18}, {x: 6, y: 18}, {x: 7, y: 18},
+            {x: 5, y: 19}, {x: 6, y: 19}, {x: 7, y: 19},
+            {x: 5, y: 20}, {x: 6, y: 20}, {x: 7, y: 20},
+            {x: 5, y: 21}, {x: 6, y: 21}, {x: 7, y: 21},
+            {x: 5, y: 22}, {x: 6, y: 22}, {x: 7, y: 22},
+            {x: 22, y: 18}, {x: 23, y: 18}, {x: 24, y: 18},
+            {x: 22, y: 19}, {x: 23, y: 19}, {x: 24, y: 19},
+            {x: 22, y: 20}, {x: 23, y: 20}, {x: 24, y: 20},
+            {x: 22, y: 21}, {x: 23, y: 21}, {x: 24, y: 21},
+            {x: 22, y: 22}, {x: 23, y: 22}, {x: 24, y: 22},
+            // 腿部肌肉
+            {x: 10, y: 35}, {x: 11, y: 35}, {x: 12, y: 35},
+            {x: 10, y: 36}, {x: 11, y: 36}, {x: 12, y: 36},
+            {x: 10, y: 37}, {x: 11, y: 37}, {x: 12, y: 37},
+            {x: 10, y: 38}, {x: 11, y: 38}, {x: 12, y: 38},
+            {x: 17, y: 35}, {x: 18, y: 35}, {x: 19, y: 35},
+            {x: 17, y: 36}, {x: 18, y: 36}, {x: 19, y: 36},
+            {x: 17, y: 37}, {x: 18, y: 37}, {x: 19, y: 37},
+            {x: 17, y: 38}, {x: 18, y: 38}, {x: 19, y: 38}
+        ],
+        desc: '肌肉是人体的运动器官，负责产生力量和运动，分为骨骼肌、平滑肌和心肌。',
+        metrics: [
+            { label: '数量', value: '600+块' },
+            { label: '占体重', value: '40%' },
+            { label: '肌纤维', value: '60亿条' }
+        ]
+    }
+};
+
+// 初始化像素艺术人体
+function initPixelBody() {
+    const pixelBody = document.getElementById('pixelBody');
+    if (!pixelBody) return;
+    
+    // 创建像素网格
+    const pixelGrid = document.createElement('div');
+    pixelGrid.className = 'pixel-grid';
+    
+    // 生成像素
+    for (let y = 0; y < 50; y++) {
+        for (let x = 0; x < 30; x++) {
+            const pixel = document.createElement('div');
+            pixel.className = 'pixel';
+            pixel.dataset.x = x;
+            pixel.dataset.y = y;
+            
+            // 检查是否属于某个器官
+            for (const [organName, organ] of Object.entries(pixelOrgans)) {
+                if (organ.position.some(pos => pos.x === x && pos.y === y)) {
+                    pixel.classList.add(organ.color);
+                    pixel.dataset.organ = organName;
+                    break;
+                }
+            }
+            
+            // 添加点击事件
+            pixel.addEventListener('click', () => handlePixelClick(pixel));
+            
+            pixelGrid.appendChild(pixel);
+        }
+    }
+    
+    pixelBody.appendChild(pixelGrid);
+}
+
+// 处理像素点击
+function handlePixelClick(pixel) {
+    const organName = pixel.dataset.organ;
+    if (!organName) return;
+    
+    const organ = pixelOrgans[organName];
+    if (!organ) return;
+    
+    // 显示器官信息
+    document.getElementById('pixelOrganTitle').textContent = organ.name;
+    document.getElementById('pixelOrganDesc').textContent = organ.desc;
+    
+    // 生成器官指标
+    const metricsContainer = document.getElementById('pixelOrganMetrics');
+    metricsContainer.innerHTML = '';
+    
+    organ.metrics.forEach(metric => {
+        const metricItem = document.createElement('div');
+        metricItem.className = 'metric-item';
+        metricItem.innerHTML = `
+            <div class="metric-value">${metric.value}</div>
+            <div class="metric-label">${metric.label}</div>
+        `;
+        metricsContainer.appendChild(metricItem);
+    });
+    
+    // 高亮器官
+    document.querySelectorAll('.pixel').forEach(p => p.classList.remove('organ-active'));
+    document.querySelectorAll(`[data-organ="${organName}"]`).forEach(p => p.classList.add('organ-active'));
 }
 
 // 人体交互
@@ -715,16 +994,69 @@ function initBodyInteractions() {
 }
 
 // 标签切换
-function switchTab(tab) {
+function switchTab(tab, event) {
+    // 移除所有导航标签的激活状态
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     
-    event.currentTarget.classList.add('active');
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+    } else {
+        // 找到对应的侧边栏标签并激活
+        const sidebarTab = document.querySelector(`.sidebar-tab[onclick*="switchTab('${tab}'"]`);
+        if (sidebarTab) {
+            sidebarTab.classList.add('active');
+        }
+    }
     document.getElementById('tab-' + tab).classList.add('active');
     currentTab = tab;
     
     // 重新渲染图表
     if (tab === 'overview') setTimeout(initCharts, 100);
+    
+    // 在移动设备上关闭侧边栏
+    if (window.innerWidth <= 768) {
+        closeSidebar();
+    }
+}
+
+// 初始化侧边栏
+function initSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    
+    // 创建遮罩层
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.id = 'overlay';
+    document.body.appendChild(overlay);
+    
+    // 打开侧边栏
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+    });
+    
+    // 关闭侧边栏
+    sidebarClose.addEventListener('click', closeSidebar);
+    
+    overlay.addEventListener('click', closeSidebar);
+    
+    // 点击侧边栏中的隐私模式按钮时，更新侧边栏按钮状态
+    document.getElementById('sidebarPrivacy').addEventListener('click', () => {
+        const isActive = document.getElementById('privacyToggle').classList.contains('active');
+        document.getElementById('sidebarPrivacy').classList.toggle('active', isActive);
+    });
+}
+
+// 关闭侧边栏
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
 }
 
 // 核心计算
@@ -787,13 +1119,40 @@ function calculateAll(force = false) {
         { max: 99, text: '过高', class: 'status-danger' }
     ]);
     
+    // 保存健康数据到本地存储
+    const healthData = {
+        height,
+        weight,
+        age,
+        gender,
+        waist,
+        goal,
+        bmi,
+        bmr,
+        bfp,
+        tdee,
+        met,
+        idealWeight: Math.round((idealMin + idealMax) / 2)
+    };
+    VitalityLab.storage.saveHealthData(healthData);
+    
     // 生成推荐
     generateRecommendations(bmi, bfp, tdee, goal);
+    
+    // 重新渲染图表，包含历史数据
+    if (currentTab === 'overview') {
+        setTimeout(initCharts, 100);
+    }
     
     // 检查彩蛋
     checkEasterEggs(bmi, weight, height);
     
     showToast('分析完成！🎉');
+    showToast('数据已保存到本地存储 📊');
+    
+    // 更新每日卡路里需求
+    updateDailyCalories();
+
 }
 
 function updateStatus(elementId, value, ranges) {
@@ -857,7 +1216,7 @@ function generateRecommendations(bmi, bfp, tdee, goal) {
     recommendations.push({
         icon: '💧',
         title: '水合状态管理',
-        desc: `每日饮水 ${Math.round(userData.weight * 35)}ml。运动时每15分钟补充150-200ml含电解质饮料。`,
+        desc: `每日饮水 ${Math.round(userData.weight * 35)}ml。运动时每15分钟补充150-200ml含电解质饮料。脱水会降低运动表现10-15%。`,
         tags: ['水', '电解质'],
         color: 'linear-gradient(135deg, #0ea5e9, #06b6d4)'
     });
@@ -865,9 +1224,33 @@ function generateRecommendations(bmi, bfp, tdee, goal) {
     recommendations.push({
         icon: '😴',
         title: '睡眠优化',
-        desc: '保证7-9小时睡眠。深度睡眠期间生长激素分泌达峰值，促进组织修复。避免睡前蓝光暴露。',
+        desc: '保证7-9小时睡眠。深度睡眠期间生长激素分泌达峰值，促进组织修复。避免睡前蓝光暴露，建议睡前1小时使用暖色调灯光。',
         tags: ['褪黑素', '生长激素'],
         color: 'linear-gradient(135deg, #8b5cf6, #a855f7)'
+    });
+    
+    recommendations.push({
+        icon: '🧠',
+        title: '认知健康',
+        desc: '每日进行15-20分钟冥想或正念练习，可降低皮质醇水平15-20%，改善注意力和记忆力。',
+        tags: ['冥想', '皮质醇'],
+        color: 'linear-gradient(135deg, #f59e0b, #f97316)'
+    });
+    
+    recommendations.push({
+        icon: '🧪',
+        title: '抗氧化策略',
+        desc: '增加富含抗氧化剂的食物摄入，如蓝莓、菠菜、坚果等。抗氧化剂可中和自由基，延缓细胞衰老。',
+        tags: ['抗氧化', '自由基'],
+        color: 'linear-gradient(135deg, #10b981, #34d399)'
+    });
+    
+    recommendations.push({
+        icon: '🌞',
+        title: '维生素D补充',
+        desc: '每日15-20分钟阳光照射，可促进维生素D合成。维生素D对骨骼健康、免疫系统和心情调节至关重要。',
+        tags: ['维生素D', '阳光'],
+        color: 'linear-gradient(135deg, #f59e0b, #fbbf24)'
     });
     
     // 渲染
@@ -952,6 +1335,12 @@ function closeModal(e) {
 function togglePrivacy() {
     isPrivacyMode = !isPrivacyMode;
     document.getElementById('privacyToggle').classList.toggle('active', isPrivacyMode);
+    
+    // 更新侧边栏中的隐私模式按钮状态
+    const sidebarPrivacy = document.getElementById('sidebarPrivacy');
+    if (sidebarPrivacy) {
+        sidebarPrivacy.classList.toggle('active', isPrivacyMode);
+    }
     
     if (isPrivacyMode) {
         showToast('🔒 隐私模式已开启 - 数据仅保存在本地');
@@ -1092,8 +1481,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initParticles();
     initFloatingEmojis();
     initPeriodicTable();
+    initHealthHistory();
     initCharts();
     initBodyInteractions();
+    initPixelBody();
+    initSidebar();
     startQuoteRotation();
     initLanguage();
     
@@ -1121,3 +1513,199 @@ window.addEventListener('resize', () => {
         setTimeout(initCharts, 100);
     }
 });
+
+// 错误监控机制
+function initErrorMonitoring() {
+    // 全局错误捕获
+    window.addEventListener('error', (event) => {
+        console.error('全局错误:', event.error);
+        console.error('错误位置:', event.filename, '行:', event.lineno, '列:', event.colno);
+        // 这里可以添加错误上报逻辑
+    });
+    
+    // 未处理的Promise拒绝
+    window.addEventListener('unhandledrejection', (event) => {
+        console.error('未处理的Promise拒绝:', event.reason);
+        // 这里可以添加错误上报逻辑
+    });
+    
+    console.log('🔒 错误监控机制已初始化');
+}
+
+// 初始化错误监控
+initErrorMonitoring();
+
+// 健康提醒功能
+function setWaterReminder() {
+    const interval = parseInt(document.getElementById('waterInterval').value);
+    if (isNaN(interval) || interval < 15 || interval > 180) {
+        showToast('请输入有效的提醒间隔（15-180分钟）');
+        return;
+    }
+    
+    // 清除之前的定时器
+    if (window.waterReminderInterval) {
+        clearInterval(window.waterReminderInterval);
+    }
+    
+    // 设置新的定时器
+    window.waterReminderInterval = setInterval(() => {
+        showToast('💧 该喝水了！保持水分摄入对健康至关重要');
+        // 可以添加浏览器通知
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('水喝提醒', {
+                body: '该喝水了！保持水分摄入对健康至关重要',
+                icon: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=water%20drop%20icon&image_size=square'
+            });
+        }
+    }, interval * 60 * 1000);
+    
+    document.getElementById('waterStatus').textContent = `已设置，每${interval}分钟提醒一次`;
+    showToast('水喝提醒已设置 🌊');
+}
+
+function setMealReminders() {
+    const breakfast = document.getElementById('breakfastTime').value;
+    const lunch = document.getElementById('lunchTime').value;
+    const dinner = document.getElementById('dinnerTime').value;
+    
+    if (!breakfast || !lunch || !dinner) {
+        showToast('请设置所有餐点时间');
+        return;
+    }
+    
+    // 清除之前的定时器
+    if (window.mealReminderTimers) {
+        window.mealReminderTimers.forEach(timer => clearTimeout(timer));
+    }
+    window.mealReminderTimers = [];
+    
+    // 设置餐点提醒
+    const setMealReminder = (time, meal) => {
+        const now = new Date();
+        const [hours, minutes] = time.split(':').map(Number);
+        const reminderTime = new Date(now);
+        reminderTime.setHours(hours, minutes, 0, 0);
+        
+        if (reminderTime < now) {
+            reminderTime.setDate(reminderTime.getDate() + 1);
+        }
+        
+        const delay = reminderTime - now;
+        const timer = setTimeout(() => {
+            showToast(`🍽️ 该吃${meal}了！保持规律饮食对健康至关重要`);
+            // 可以添加浏览器通知
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(`${meal}时间提醒`, {
+                    body: `该吃${meal}了！保持规律饮食对健康至关重要`,
+                    icon: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=food%20icon&image_size=square'
+                });
+            }
+            // 每天重复
+            setMealReminder(time, meal);
+        }, delay);
+        
+        window.mealReminderTimers.push(timer);
+    };
+    
+    setMealReminder(breakfast, '早餐');
+    setMealReminder(lunch, '午餐');
+    setMealReminder(dinner, '晚餐');
+    
+    document.getElementById('mealStatus').textContent = '已设置早餐、午餐、晚餐提醒';
+    showToast('餐点提醒已设置 🍎');
+}
+
+function setWeightReminder() {
+    const targetWeight = parseFloat(document.getElementById('targetWeight').value);
+    const frequency = document.getElementById('weightReminderFrequency').value;
+    
+    if (isNaN(targetWeight) || targetWeight <= 0) {
+        showToast('请输入有效的目标体重');
+        return;
+    }
+    
+    // 清除之前的定时器
+    if (window.weightReminderInterval) {
+        clearInterval(window.weightReminderInterval);
+    }
+    
+    // 设置减肥提醒
+    const interval = frequency === 'daily' ? 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+    
+    window.weightReminderInterval = setInterval(() => {
+        showToast(`🎯 减肥提醒：您的目标体重是${targetWeight}kg，继续努力！`);
+        // 可以添加浏览器通知
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('减肥提醒', {
+                body: `您的目标体重是${targetWeight}kg，继续努力！`,
+                icon: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=weight%20loss%20icon&image_size=square'
+            });
+        }
+    }, interval);
+    
+    document.getElementById('weightStatus').textContent = `已设置${frequency === 'daily' ? '每天' : '每周'}减肥提醒`;
+    showToast('减肥提醒已设置 🎯');
+}
+
+// 卡路里计算工具
+function calculateCalories() {
+    const foodName = document.getElementById('foodName').value;
+    const weight = parseFloat(document.getElementById('foodWeight').value);
+    
+    if (!foodName) {
+        showToast('请输入食物名称');
+        return;
+    }
+    
+    if (isNaN(weight) || weight <= 0) {
+        showToast('请输入有效的食物重量');
+        return;
+    }
+    
+    // 简单的食物卡路里数据库
+    const foodDatabase = {
+        '苹果': 52,
+        '香蕉': 89,
+        '鸡蛋': 155,
+        '牛奶': 42,
+        '米饭': 130,
+        '鸡肉': 165,
+        '牛肉': 250,
+        '鱼肉': 200,
+        '蔬菜': 25,
+        '水果': 50,
+        '面包': 265,
+        '面条': 138
+    };
+    
+    // 查找食物卡路里
+    let caloriesPer100g = foodDatabase[foodName] || 100; // 默认值
+    const totalCalories = (caloriesPer100g / 100) * weight;
+    
+    document.getElementById('calorieResult').innerHTML = `
+        <strong>${foodName}</strong><br>
+        ${weight}g 含有约 ${totalCalories.toFixed(0)} 卡路里
+    `;
+    
+    showToast('卡路里计算完成 🍎');
+}
+
+// 更新每日卡路里需求
+function updateDailyCalories() {
+    if (userData.tdee) {
+        document.getElementById('dailyCalories').textContent = `每日卡路里需求：${Math.round(userData.tdee)} kcal`;
+    }
+}
+
+// 暴露全局函数
+window.switchTab = switchTab;
+window.calculateAll = calculateAll;
+window.togglePrivacy = togglePrivacy;
+window.triggerEasterEgg = triggerEasterEgg;
+window.showOrganDetail = showOrganDetail;
+window.toggleLanguage = toggleLanguage;
+window.setWaterReminder = setWaterReminder;
+window.setMealReminders = setMealReminders;
+window.setWeightReminder = setWeightReminder;
+window.calculateCalories = calculateCalories;
