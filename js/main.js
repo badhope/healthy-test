@@ -367,6 +367,27 @@ class LabApp {
             return;
         }
 
+        if (height < 50 || height > 250) {
+            if (showToastFlag) {
+                Utils.showToast('身高请在 50-250cm 之间');
+            }
+            return;
+        }
+
+        if (weight < 10 || weight > 300) {
+            if (showToastFlag) {
+                Utils.showToast('体重请在 10-300kg 之间');
+            }
+            return;
+        }
+
+        if (age < 1 || age > 150) {
+            if (showToastFlag) {
+                Utils.showToast('年龄请在 1-150 岁之间');
+            }
+            return;
+        }
+
         // 计算BMI
         const bmi = weight / Math.pow(height / 100, 2);
         const bmiValue = document.getElementById('bmiValue');

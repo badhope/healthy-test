@@ -1,0 +1,35 @@
+{
+  "name": "healthy-test",
+  "version": "3.0.0",
+  "description": "健康测试平台 - 探索生命科学的无限可能，从分子到系统的健康全景",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 3000 -o",
+    "serve": "npx http-server -p 3000",
+    "lint": "npx eslint js/**/*.js",
+    "format": "npx prettier --write \"**/*.{js,css,html}\""
+  },
+  "keywords": [
+    "health",
+    "medical",
+    "wellness",
+    "bmi",
+    "nutrition",
+    "fitness"
+  ],
+  "author": "healthy-test",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/badhope/healthy-test.git"
+  },
+  "homepage": "https://badhope.github.io/healthy-test/",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

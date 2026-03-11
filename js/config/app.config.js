@@ -94,9 +94,9 @@ export const AppConfig = {
             }
         },
         WATER_INTAKE: {
-            DAILY_GOAL: 2000, // ml
-            MIN_INTERVAL: 30, // 分钟
-            MAX单次：500 // ml
+            DAILY_GOAL: 2000,
+            MIN_INTERVAL: 30,
+            MAX_SINGLE_INTAKE: 500
         },
         SLEEP: {
             MIN_HOURS: 7,
