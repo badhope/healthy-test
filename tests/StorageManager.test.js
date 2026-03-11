@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import StorageManager from '../js/core/StorageManager.js';
 
 const mockConfig = {

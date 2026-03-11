@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import HealthCalculator from '../js/core/HealthCalculator.js';
 import SecurityValidator from '../js/core/SecurityValidator.js';
 import StorageManager from '../js/core/StorageManager.js';

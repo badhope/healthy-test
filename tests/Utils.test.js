@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import Utils from '../js/core/utils.js';
 
 const mockConfig = {

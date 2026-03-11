@@ -1,13 +1,14 @@
+import { jest } from '@jest/globals';
 import { ErrorHandler, AppError, ValidationError, StorageError, NetworkError } from '../js/core/ErrorHandler.js';
 
 describe('ErrorHandler', () => {
     beforeEach(() => {
         ErrorHandler.clearErrors();
-        jest.spyOn(console, 'error').mockImplementation();
+        jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
-        console.error.mockRestore();
+        jest.restoreAllMocks();
     });
 
     describe('AppError', () => {
@@ -80,6 +81,7 @@ describe('ErrorHandler', () => {
         });
 
         test('should limit errors to maxErrors', () => {
+            const originalMax = ErrorHandler.maxErrors;
             ErrorHandler.maxErrors = 5;
             
             for (let i = 0; i < 10; i++) {
@@ -88,6 +90,7 @@ describe('ErrorHandler', () => {
             
             expect(ErrorHandler.errors.length).toBe(5);
             expect(ErrorHandler.errors[0].message).toBe('Error 9');
+            ErrorHandler.maxErrors = originalMax;
         });
     });
 

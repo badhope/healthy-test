@@ -7,9 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# 依赖目录
 node_modules
+
+# 构建产物
 dist
 dist-ssr
+build/
+out/
 *.local
 
 # 编辑器目录和文件
@@ -30,10 +35,6 @@ dist-ssr
 .env.test.local
 .env.production.local
 
-# 构建产物
-build/
-out/
-
 # 测试覆盖率
 coverage/
 .nyc_output/
@@ -42,3 +43,31 @@ coverage/
 *.tmp
 *.temp
 .cache/
+
+# 操作系统文件
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# IDE 备份文件
+*~
+*.bak
+*.swp
+*.swo
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+
+# 调试文件
+*.map
+
+# 旧版/备份文件
+*.old
+*.backup
+*.legacy
+
+# 临时测试文件
+test-*.js
+*.test.js.bak

@@ -12,7 +12,8 @@ export class SecurityValidator {
     ];
 
     static SQL_INJECTION_PATTERNS = [
-        /('|(\\'))|(;)|(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE)\b)/gi,
+        /('|(\\'))|(;)/g,
+        /\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE)\b/gi,
         /(--)|(\/\*)|(\*\/)/g,
         /(\bOR\b|\bAND\b)\s*['"]?\d+['"]?\s*=\s*['"]?\d+/gi
     ];
@@ -32,16 +33,16 @@ export class SecurityValidator {
 
         let sanitized = input;
 
+        if (options.stripTags) {
+            sanitized = sanitized.replace(/<[^>]*>/g, '');
+        }
+
         sanitized = sanitized
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#x27;')
             .replace(/\//g, '&#x2F;');
-
-        if (options.stripTags) {
-            sanitized = sanitized.replace(/<[^>]*>/g, '');
-        }
 
         if (options.maxLength && sanitized.length > options.maxLength) {
             sanitized = sanitized.substring(0, options.maxLength);
@@ -95,8 +96,9 @@ export class SecurityValidator {
                 break;
 
             case 'integer':
+                const intStr = String(input);
                 const int = parseInt(input, 10);
-                if (isNaN(int) || !Number.isInteger(int)) {
+                if (isNaN(int) || intStr.includes('.')) {
                     result.valid = false;
                     result.threats.push('INVALID_INTEGER');
                 } else if (options.min !== undefined && int < options.min) {

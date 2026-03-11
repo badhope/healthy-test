@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import SecurityValidator from '../js/core/SecurityValidator.js';
 
 describe('SecurityValidator', () => {
@@ -106,7 +107,7 @@ describe('SecurityValidator', () => {
         test('should detect and sanitize XSS', () => {
             const result = SecurityValidator.validateInput('<script>alert(1)</script>', 'text');
             expect(result.threats).toContain('XSS_DETECTED');
-            expect(result.sanitized).toBe('&lt;script&gt;alert(1)&lt;/script&gt;');
+            expect(result.sanitized).toBe('&lt;script&gt;alert(1)&lt;&#x2F;script&gt;');
         });
     });
 
