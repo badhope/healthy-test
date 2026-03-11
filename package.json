@@ -1,6 +1,6 @@
 {
   "name": "healthy-test",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "健康测试平台 - 探索生命科学的无限可能，从分子到系统的健康全景",
   "main": "index.html",
   "type": "module",
@@ -8,9 +8,15 @@
     "start": "npx http-server -p 3000 -o",
     "serve": "npx http-server -p 3000",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test:ci": "node --experimental-vm-modules node_modules/jest/bin/jest.js --ci --coverage --reporters=default --reporters=jest-junit",
     "lint": "npx eslint js/**/*.js",
-    "format": "npx prettier --write \"**/*.{js,css,html}\""
+    "lint:fix": "npx eslint js/**/*.js --fix",
+    "format": "npx prettier --write \"**/*.{js,css,html}\"",
+    "format:check": "npx prettier --check \"**/*.{js,css,html}\"",
+    "quality": "npm run lint && npm run test:coverage",
+    "precommit": "npm run lint && npm run format:check && npm run test"
   },
   "keywords": [
     "health",
@@ -32,22 +38,27 @@
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
     "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0"
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-junit": "^16.0.0"
   },
   "jest": {
     "testEnvironment": "jsdom",
     "transform": {},
     "moduleFileExtensions": ["js", "mjs"],
     "testMatch": ["**/tests/**/*.test.js"],
-    "collectCoverageFrom": ["js/core/**/*.js"],
+    "collectCoverageFrom": [
+      "js/core/**/*.js",
+      "!js/core/**/*.test.js"
+    ],
     "coverageThreshold": {
       "global": {
-        "branches": 50,
-        "functions": 50,
-        "lines": 50,
-        "statements": 50
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
       }
-    }
+    },
+    "coverageReporters": ["text", "lcov", "html", "json-summary"]
   },
   "engines": {
     "node": ">=16.0.0"
